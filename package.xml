@@ -10,20 +10,20 @@
   <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
   <license>Custom. Please contact us.</license>
 
-  <url type="website">https://github.com/gestom/whycon-orig</url>
+  <url type="website">https://github.com/jiriUlr/whycon-ros</url>
 
   <author email="tomas.krajnik@fel.cvut.cz">Tom Krajnik</author>
   <author email="jiri.ulrich@fel.cvut.cz">Jiri Ulrich</author>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake_ros</buildtool_depend>
   
-  <depend>roscpp</depend>
+  <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>
-  <depend>tf</depend>
+  <!-- <depend>tf</depend> -->
   <depend>image_transport</depend>
-  <depend>dynamic_reconfigure</depend>
+  <!-- <depend>dynamic_reconfigure</depend> -->
   <depend>message_generation</depend>
-  <depend>visualization_msgs</depend>
+  <!-- <depend>visualization_msgs</depend> -->
   <depend>geometry_msgs</depend>
 
   <exec_depend>message_runtime</exec_depend>

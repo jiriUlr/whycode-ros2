@@ -1,116 +1,116 @@
 #include "whycon_ros/whycon_ros_node.h"
 
+#include <functional>
+#include <memory>
 #include <string>
 #include <algorithm>
 
-#include <geometry_msgs/TransformStamped.h>
-#include <visualization_msgs/MarkerArray.h>
-#include "whycon/MarkerArray.h"
-#include "whycon/Marker.h"
+#include <geometry_msgs/msg/transform_stamped.hpp>
+// #include <visualization_msgs/msg/marker_array.hpp>
 
 
-namespace whycon_ros
+namespace whycon_ros2
 {
 
-bool CWhyconROSNode::getGuiSettingsCallback(whycon::GetGuiSettings::Request &req, whycon::GetGuiSettings::Response &res)
+void CWhyconROSNode::getGuiSettingsCallback(const std::shared_ptr<whycon::srv::GetGuiSettings::Request> req,
+                                                  std::shared_ptr<whycon::srv::GetGuiSettings::Response> res)
 {
-    ROS_INFO("getGuiSettingsCallback");
-    res.draw_coords = whycon_.getDrawCoords();
-    res.draw_segments = whycon_.getDrawSegments();
-    res.coords = whycon_.getCoordinates();
-    return true;
+    RCLCPP_INFO(node->get_logger(), "getGuiSettingsCallback");
+    res->draw_coords = whycon_.getDrawCoords();
+    res->draw_segments = whycon_.getDrawSegments();
+    res->coords = whycon_.getCoordinates();
 }
 
-bool CWhyconROSNode::setDrawingCallback(whycon::SetDrawing::Request &req, whycon::SetDrawing::Response &res)
+void CWhyconROSNode::setDrawingCallback(const std::shared_ptr<whycon::srv::SetDrawing::Request> req,
+                                              std::shared_ptr<whycon::srv::SetDrawing::Response> res)
 {
-    ROS_INFO("setDrawingCallback coords %d segs %d", req.draw_coords, req.draw_segments);
-    whycon_.setDrawing(req.draw_coords, req.draw_segments);
-    res.success = true;
-    return true;
+    RCLCPP_INFO(node->get_logger(), "setDrawingCallback coords %d segs %d", req->draw_coords, req->draw_segments);
+    whycon_.setDrawing(req->draw_coords, req->draw_segments);
+    res->success = true;
 }
 
-bool CWhyconROSNode::setCoordsCallback(whycon::SetCoords::Request &req, whycon::SetCoords::Response &res)
+void CWhyconROSNode::setCoordsCallback(const std::shared_ptr<whycon::srv::SetCoords::Request> req,
+                                             std::shared_ptr<whycon::srv::SetCoords::Response> res)
 {
-    ROS_INFO("setCoordsCallback %d", req.coords);
+    RCLCPP_INFO(node->get_logger(), "setCoordsCallback %d", req->coords);
     try
     {
-        whycon_.setCoordinates(static_cast<whycon::ETransformType>(req.coords));
-        res.success = true;
+        whycon_.setCoordinates(static_cast<whycon::ETransformType>(req->coords));
+        res->success = true;
     }
     catch(const std::exception& e)
     {
-        res.success = false;
-        res.msg = e.what();
+        res->success = false;
+        res->msg = e.what();
     }
-    return true;
 }
 
-bool CWhyconROSNode::setCalibMethodCallback(whycon::SetCalibMethod::Request &req, whycon::SetCalibMethod::Response &res)
+void CWhyconROSNode::setCalibMethodCallback(const std::shared_ptr<whycon::srv::SetCalibMethod::Request> req,
+                                                  std::shared_ptr<whycon::srv::SetCalibMethod::Response> res)
 {
-    ROS_INFO("setCalibMethodCallback %d", req.method);
+    RCLCPP_INFO(node->get_logger(), "setCalibMethodCallback %d", req->method);
     try
     {
-        if(req.method == 0)
+        if(req->method == 0)
         {
             whycon_.autocalibration();
-            res.success = true;
+            res->success = true;
         }
-        else if(req.method == 1)
+        else if(req->method == 1)
         {
             whycon_.manualcalibration();
-            res.success = true;
+            res->success = true;
         }
         else
         {
-            res.success = false;
-            res.msg = "ERROR in setting calibration method : unkown method '" + std::to_string(req.method) + "'";
+            res->success = false;
+            res->msg = "ERROR in setting calibration method : unkown method '" + std::to_string(req->method) + "'";
         }
     }
     catch(const std::exception& e)
     {
-        res.success = false;
-        res.msg = e.what();
+        res->success = false;
+        res->msg = e.what();
     }
-    return true;
 }
 
-bool CWhyconROSNode::setCalibPathCallback(whycon::SetCalibPath::Request &req, whycon::SetCalibPath::Response &res)
+void CWhyconROSNode::setCalibPathCallback(const std::shared_ptr<whycon::srv::SetCalibPath::Request> req,
+                                                std::shared_ptr<whycon::srv::SetCalibPath::Response> res)
 {
-    ROS_INFO("setCalibPathCallback action %s path %s", req.action.c_str(), req.path.c_str());
+    RCLCPP_INFO(node->get_logger(), "setCalibPathCallback action %s path %s", req->action.c_str(), req->path.c_str());
     try
     {
-        if(req.action == "load")
+        if(req->action == "load")
         {
-            whycon_.loadCalibration(req.path);
-            res.success = true;
+            whycon_.loadCalibration(req->path);
+            res->success = true;
         }
-        else if(req.action == "save")
+        else if(req->action == "save")
         {
-            whycon_.saveCalibration(req.path);
-            res.success = true;
+            whycon_.saveCalibration(req->path);
+            res->success = true;
         }
         else
         {
-            res.success = false;
-            res.msg = "ERROR in setting calibration path : unkown action '" + req.action + "'";
+            res->success = false;
+            res->msg = "ERROR in setting calibration path : unkown action '" + req->action + "'";
         }
     }
     catch(const std::exception& e)
     {
-        res.success = false;
-        res.msg = e.what();
+        res->success = false;
+        res->msg = e.what();
     }
-    return true;
 }
 
-bool CWhyconROSNode::selectMarkerCallback(whycon::SelectMarker::Request &req, whycon::SelectMarker::Response &res)
+void CWhyconROSNode::selectMarkerCallback(const std::shared_ptr<whycon::srv::SelectMarker::Request> req,
+                                                std::shared_ptr<whycon::srv::SelectMarker::Response> res)
 {
-    ROS_INFO("selectMarkerCallback x %f y %f", req.point.x, req.point.y);
-    whycon_.selectMarker(req.point.x, req.point.y);
-    return true;
+    RCLCPP_INFO(node->get_logger(), "selectMarkerCallback x %f y %f", req->point.x, req->point.y);
+    whycon_.selectMarker(req->point.x, req->point.y);
 }
 
-void CWhyconROSNode::reconfigureCallback(whycon::whyconConfig& config, uint32_t level)
+/* void CWhyconROSNode::reconfigureCallback(whycon::whyconConfig& config, uint32_t level)
 {
     ROS_INFO("[Reconfigure Request]\n"
         "identify %s circle_diameter %lf num_markers %d\n"
@@ -133,13 +133,13 @@ void CWhyconROSNode::reconfigureCallback(whycon::whyconConfig& config, uint32_t 
         );
 
     identify_ = config.identify;
-}
+} */
 
-void CWhyconROSNode::cameraInfoCallback(const sensor_msgs::CameraInfo::ConstPtr &msg)
+void CWhyconROSNode::cameraInfoCallback(const sensor_msgs::msg::CameraInfo::SharedPtr msg)
 {
     if(msg->K[0] == 0)
     {
-        ROS_ERROR_ONCE("ERROR: Camera is not calibrated!");
+        RCLCPP_ERROR_ONCE(node->get_logger(), "ERROR: Camera is not calibrated!");
         return;
     }
 
@@ -152,7 +152,7 @@ void CWhyconROSNode::cameraInfoCallback(const sensor_msgs::CameraInfo::ConstPtr 
     whycon_.updateCameraInfo(intrinsic_mat_, distortion_coeffs_);
 }
 
-void CWhyconROSNode::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
+void CWhyconROSNode::imageCallback(const sensor_msgs::msg::Image::ConstPtr &msg)
 {
     // convert sensor_msgs::Image msg to whycon CRawImage
     image_->updateImage((unsigned char*)&msg->data[0], msg->width, msg->height, msg->step / msg->width);
@@ -160,19 +160,19 @@ void CWhyconROSNode::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
     whycon_.processImage(image_, whycon_detections_);
 
     // generate information about markers into msgs
-    whycon::MarkerArray marker_array;
-    marker_array.header.stamp = ros::Time::now();
+    whycon::msg::MarkerArray marker_array;
+    marker_array.header.stamp = node->header.stamp;
     marker_array.header.frame_id = msg->header.frame_id;
     
     // tf vector
-    std::vector<geometry_msgs::TransformStamped> transform_array;
+    // std::vector<geometry_msgs::TransformStamped> transform_array;
 
     // Generate RVIZ visualization marker
-    visualization_msgs::MarkerArray visual_array;
+    // visualization_msgs::MarkerArray visual_array;
 
     for(const whycon::SMarker &detection : whycon_detections_)
     {
-        whycon::Marker marker;
+        whycon::msg::Marker marker;
 
         marker.id = detection.seg.ID;
         marker.size = detection.seg.size;
@@ -193,7 +193,7 @@ void CWhyconROSNode::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
         marker.rotation.z = detection.obj.yaw;
         marker_array.markers.push_back(marker);
 
-        if(identify_ && publish_tf_)
+        /* if(identify_ && publish_tf_)
         {
             geometry_msgs::TransformStamped transform_stamped;
 
@@ -209,9 +209,9 @@ void CWhyconROSNode::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
             transform_stamped.transform.rotation.w = detection.obj.qw;
 
             transform_array.push_back(transform_stamped);
-        }
+        } */
 
-        if(publish_visual_)
+        /* if(publish_visual_)
         {
             visualization_msgs::Marker visual_marker;
             visual_marker.header.stamp = ros::Time::now();
@@ -240,19 +240,19 @@ void CWhyconROSNode::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
             visual_marker.frame_locked = true;
 
             visual_array.markers.push_back(visual_marker);
-        }
+        } */
     }
 
     // publishing detected markers
     if(marker_array.markers.size() > 0)
     {
-        markers_pub_.publish(marker_array);
+        markers_pub_->publish(marker_array);
 
-        if(publish_visual_)
+        /* if(publish_visual_)
             visual_pub_.publish(visual_array);
 
         for(int i = 0; i < transform_array.size(); i++)
-            tf_broad_.sendTransform(transform_array[i]);
+            tf_broad_.sendTransform(transform_array[i]); */
     }
 
     if(use_gui_)
@@ -266,64 +266,74 @@ void CWhyconROSNode::imageCallback(const sensor_msgs::Image::ConstPtr &msg)
 
 void CWhyconROSNode::start()
 {
-    while(ros::ok())
+    while(rclcpp::ok())
     {
-        ros::spinOnce();
+        rclcpp::spin_some(node);
         usleep(10000);
     }
 }
 
 CWhyconROSNode::CWhyconROSNode() :
-    intrinsic_mat_(9)
-    , distortion_coeffs_(5)
+    intrinsic_mat_(9),
+    distortion_coeffs_(5),
+    node(rclcpp::Node::make_shared("~"))
 {
-    ros::NodeHandle nh("~");        // ROS node handle
+    // ros::NodeHandle nh("~");
     
-    int id_bits;                    // num of ID bits
-    int id_samples;                 // num of samples to identify ID
-    int hamming_dist;               // hamming distance of ID code
-    int num_markers;                // initial number of markers
+    int id_bits;
+    int id_samples;
+    int hamming_dist;
+    int num_markers;
     std::string calib_path;
     int coords_method;
 
-    // obtain parameters
-    nh.param("use_gui", use_gui_, true);
-    nh.param("pub_visual", publish_visual_, false);
-    nh.param("pub_tf", publish_tf_, false);
-    nh.param("circle_diameter", circle_diameter_, 0.122);
-    nh.param("id_bits", id_bits, 6);
-    nh.param("id_samples", id_samples, 360);
-    nh.param("hamming_dist", hamming_dist, 1);
-    nh.param("num_markers", num_markers, 10);
-    nh.param("calib_file", calib_path, std::string(""));
-    nh.param("coords_method", coords_method, 0);
+    node->declare_parameter("use_gui", true);
+    node->declare_parameter("pub_visual", false);
+    node->declare_parameter("pub_tf", false);
+    node->declare_parameter("circle_diameter", 0.122);
+    node->declare_parameter("id_bits", 6);
+    node->declare_parameter("id_samples", 360);
+    node->declare_parameter("hamming_dist", 1);
+    node->declare_parameter("num_markers", 10);
+    node->declare_parameter("calib_file", std::string(""));
+    node->declare_parameter("coords_method", 0);
+
+    use_gui_ = node->get_parameter("use_gui").as_bool();
+    publish_visual_ = node->get_parameter("pub_visual").as_bool();
+    publish_tf_ = node->get_parameter("pub_tf").as_bool();
+    circle_diameter_ = node->get_parameter("circle_diameter").as_double();
+    id_bits = node->get_parameter("id_bits").as_int();
+    id_samples = node->get_parameter("id_samples").as_int();
+    hamming_dist = node->get_parameter("hamming_dist").as_int();
+    num_markers = node->get_parameter("num_markers").as_int();
+    calib_path = node->get_parameter("calib_file").as_string();
+    coords_method = node->get_parameter("coords_method").as_int();
 
     int default_width = 640;
     int default_height = 480;
     image_ = new whycon::CRawImage(default_width, default_height, 3);
     whycon_.init(circle_diameter_, use_gui_, id_bits, id_samples, hamming_dist, num_markers, default_width, default_height);
     
-    // subscribe to camera topics
+    // cam_info_sub_ = nh.subscribe("/camera/camera_info", 1, &CWhyconROSNode::cameraInfoCallback, this);
+    cam_info_sub_ = node->create_subscription<sensor_msgs::msg::CameraInfo>("/camera/camera_info", 1, std::bind(&CWhyconROSNode::cameraInfoCallback, this, _1));
     image_transport::ImageTransport it(nh);
-    cam_info_sub_ = nh.subscribe("/camera/camera_info", 1, &CWhyconROSNode::cameraInfoCallback, this);
-    img_sub_ = it.subscribe("/camera/image_raw", 1, &CWhyconROSNode::imageCallback, this);
+    img_sub_ = it.subscribe("/camera/image_raw", 1, std::bind(&CWhyconROSNode::imageCallback, this, _1));
     
-    // advertise topics with markers description, RVIZ visualization and GUI visualization
     img_pub_ = it.advertise("processed_image", 1);
-    markers_pub_ = nh.advertise<whycon::MarkerArray>("markers", 1);
-    visual_pub_ = nh.advertise<visualization_msgs::MarkerArray>("visualisation", 1);
+    // markers_pub_ = nh.advertise<whycon::MarkerArray>("markers", 1);
+    markers_pub_ = node->create_publisher<whycon::msg::MarkerArray>("markers", 1);
+    // visual_pub_ = nh.advertise<visualization_msgs::MarkerArray>("visualisation", 1);
 
-    // advertise services
-    drawing_srv_ = nh.advertiseService("set_drawing", &CWhyconROSNode::setDrawingCallback, this);
-    coord_system_srv_ = nh.advertiseService("set_coords", &CWhyconROSNode::setCoordsCallback, this);
-    calib_method_srv_ = nh.advertiseService("set_calib_method", &CWhyconROSNode::setCalibMethodCallback, this);
-    calib_path_srv_ = nh.advertiseService("set_calib_path", &CWhyconROSNode::setCalibPathCallback, this);
-    select_marker_srv_ = nh.advertiseService("select_marker", &CWhyconROSNode::selectMarkerCallback, this);
-    gui_settings_srv_ = nh.advertiseService("get_gui_settings", &CWhyconROSNode::getGuiSettingsCallback, this);
-
-    // create dynamic reconfigure server
-    dyn_srv_cb_ = boost::bind(&CWhyconROSNode::reconfigureCallback, this, _1, _2);
-    dyn_srv_.setCallback(dyn_srv_cb_);
+    gui_settings_srv_ = node->create_service<whycon::srv::GetGuiSettings>("get_gui_settings", std::bind(&CWhyconROSNode::getGuiSettingsCallback, this, _1));
+    drawing_srv_ = node->create_service<whycon::srv::SetDrawing>("set_drawing", std::bind(&CWhyconROSNode::setDrawingCallback, this, _1));
+    coord_system_srv_ = node->create_service<whycon::srv::SetCoords>("set_coords", std::bind(&CWhyconROSNode::setCoordsCallback, this, _1));
+    calib_method_srv_ = node->create_service<whycon::srv::SetCalibMethod>("set_calib_method", std::bind(&CWhyconROSNode::setCalibMethodCallback, this, _1));
+    calib_path_srv_ = node->create_service<whycon::srv::SetCalibPath>("set_calib_path", std::bind(&CWhyconROSNode::setCalibPathCallback, this, _1));
+    select_marker_srv_ = node->create_service<whycon::srv::SelectMarker>("select_marker", std::bind(&CWhyconROSNode::selectMarkerCallback, this, _1));
+    
+    // // create dynamic reconfigure server
+    // dyn_srv_cb_ = boost::bind(&CWhyconROSNode::reconfigureCallback, this, _1, _2);
+    // dyn_srv_.setCallback(dyn_srv_cb_);
 
     if(calib_path.size() > 0)
     {
@@ -334,12 +344,12 @@ CWhyconROSNode::CWhyconROSNode() :
         }
         catch(const std::exception& e)
         {
-            ROS_WARN("Calibration file '%s' could not be loaded. Using camera centric coordinates.", calib_path.c_str());
+            RCLCPP_WARN(node->get_logger(), "Calibration file '%s' could not be loaded. Using camera centric coordinates.", calib_path.c_str());
         }
     }
     else
     {
-        ROS_INFO("Calibration file path empty. Using camera centric coordinates.");
+        RCLCPP_INFO(node->get_logger(), "Calibration file path empty. Using camera centric coordinates.");
     }
 }
 
@@ -352,7 +362,8 @@ CWhyconROSNode::~CWhyconROSNode()
 
 int main(int argc, char *argv[])
 {
-    ros::init(argc, argv, "whycon");
+    // ros::init(argc, argv, "whycon");
+    rclcpp::init(argc, argv);
 
     whycon_ros::CWhyconROSNode whycon_ros_node;
     whycon_ros_node.start();

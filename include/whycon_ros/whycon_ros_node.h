@@ -1,49 +1,60 @@
-#ifndef WHYCON_ROS_CWHYCONROSNODE_H
-#define WHYCON_ROS_CWHYCONROSNODE_H
+#ifndef WHYCON_ROS_CWHYCONROS2NODE_H
+#define WHYCON_ROS_CWHYCONROS2NODE_H
 
 #include <vector>
 
-#include <ros/ros.h>
-#include <image_transport/image_transport.h>
-#include <dynamic_reconfigure/server.h>
+#include <rclcpp/rclcpp.hpp>
+#include <image_transport/image_transport.hpp>
 
-#include <tf2_ros/transform_broadcaster.h>
+// #include <dynamic_reconfigure/server.h>
+// #include <tf2_ros/transform_broadcaster.h>
+// #include "whycon/whyconConfig.h"
 
-#include "whycon/whyconConfig.h"
-#include "whycon/SelectMarker.h"
-#include "whycon/SetCalibMethod.h"
-#include "whycon/SetCalibPath.h"
-#include "whycon/SetCoords.h"
-#include "whycon/SetDrawing.h"
-#include "whycon/GetGuiSettings.h"
+#include <sensor_msgs/msg/camera_info.hpp>
+
+#include <whycon/srv/select_marker.hpp>
+#include <whycon/srv/set_calib_method.hpp>
+#include <whycon/srv/set_calib_path.hpp>
+#include <whycon/srv/set_coords.hpp>
+#include <whycon/srv/set_drawing.hpp>
+#include <whycon/srv/get_gui_settings.hpp>
+
+#include <whycon/msg/marker_array.hpp>
+#include <whycon/msg/marker.hpp>
 
 #include "whycon/whycon.h"
 
 
-namespace whycon_ros
+namespace whycon_ros2
 {
 
 class CWhyconROSNode
 {
 
     public:
-        bool getGuiSettingsCallback(whycon::GetGuiSettings::Request &req, whycon::GetGuiSettings::Response &res);
+        void getGuiSettingsCallback(const std::shared_ptr<whycon::srv::GetGuiSettings::Request> req,
+                                          std::shared_ptr<whycon::srv::GetGuiSettings::Response> res);
 
-        bool setDrawingCallback(whycon::SetDrawing::Request& req, whycon::SetDrawing::Response& res);
+        void setDrawingCallback(const std::shared_ptr<whycon::srv::SetDrawing::Request> req,
+                                      std::shared_ptr<whycon::srv::SetDrawing::Response> res);
 
-        bool setCoordsCallback(whycon::SetCoords::Request& req, whycon::SetCoords::Response& res);
+        void setCoordsCallback(const std::shared_ptr<whycon::srv::SetCoords::Request> req,
+                                     std::shared_ptr<whycon::srv::SetCoords::Response> res);
 
-        bool setCalibMethodCallback(whycon::SetCalibMethod::Request& req, whycon::SetCalibMethod::Response& res);
+        void setCalibMethodCallback(const std::shared_ptr<whycon::srv::SetCalibMethod::Request> req,
+                                          std::shared_ptr<whycon::srv::SetCalibMethod::Response> res);
 
-        bool setCalibPathCallback(whycon::SetCalibPath::Request& req, whycon::SetCalibPath::Response& res);
+        void setCalibPathCallback(const std::shared_ptr<whycon::srv::SetCalibPath::Request> req,
+                                        std::shared_ptr<whycon::srv::SetCalibPath::Response> res);
 
-        bool selectMarkerCallback(whycon::SelectMarker::Request& req, whycon::SelectMarker::Response& res);
+        void selectMarkerCallback(const std::shared_ptr<whycon::srv::SelectMarker::Request> req,
+                                        std::shared_ptr<whycon::srv::SelectMarker::Response> res);
 
-        void reconfigureCallback(whycon::whyconConfig& config, uint32_t level);
+        // void reconfigureCallback(whycon::whyconConfig& config, uint32_t level);
 
-        void cameraInfoCallback(const sensor_msgs::CameraInfoConstPtr& msg);
+        void cameraInfoCallback(const sensor_msgs::msg::CameraInfo::SharedPtr msg);
 
-        void imageCallback(const sensor_msgs::ImageConstPtr& msg);
+        void imageCallback(const sensor_msgs::msg::Image::ConstPtr &msg);
 
         void start();
 
@@ -52,21 +63,22 @@ class CWhyconROSNode
         ~CWhyconROSNode();
 
     private:
-        
-        ros::Subscriber cam_info_sub_;          // camera info subscriber
-        image_transport::Subscriber img_sub_;   // camera image raw subscriber
+        std::shared_ptr<rclcpp::Node> node;
 
-        image_transport::Publisher img_pub_;    // image publisher for GUI
-        ros::Publisher markers_pub_;            // publisher of MarkerArray
-        ros::Publisher visual_pub_;             // publisher of MarkerArray for RVIZ
+        rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr cam_info_sub_;
+        image_transport::Subscriber img_sub_;
+
+        image_transport::Publisher img_pub_;
+        rclcpp::Publisher<whycon::msg::MarkerArray>::SharedPtr markers_pub_;
+        // ros::Publisher visual_pub_;
 
         bool draw_coords_;
-        ros::ServiceServer drawing_srv_;
-        ros::ServiceServer calib_path_srv_;
-        ros::ServiceServer coord_system_srv_;
-        ros::ServiceServer calib_method_srv_;
-        ros::ServiceServer select_marker_srv_;
-        ros::ServiceServer gui_settings_srv_;
+        rclcpp::Service<whycon::srv::GetGuiSettings>::SharedPtr gui_settings_srv_;
+        rclcpp::Service<whycon::srv::SetDrawing>::SharedPtr drawing_srv_;
+        rclcpp::Service<whycon::srv::SetCoords>::SharedPtr coord_system_srv_;
+        rclcpp::Service<whycon::srv::SetCalibMethod>::SharedPtr calib_method_srv_;
+        rclcpp::Service<whycon::srv::SetCalibPath>::SharedPtr calib_path_srv_;
+        rclcpp::Service<whycon::srv::SelectMarker>::SharedPtr select_marker_srv_;
         
         bool publish_visual_;   // whether to publish visualization msgs
         bool use_gui_;          // generate images for graphic interface?
@@ -79,15 +91,15 @@ class CWhyconROSNode
         std::vector<float> intrinsic_mat_;        // intrinsic matrix from camera_info topic
         std::vector<float> distortion_coeffs_;    // distortion parameters from camera_info topic
 
-        dynamic_reconfigure::Server<whycon::whyconConfig> dyn_srv_;
-        dynamic_reconfigure::Server<whycon::whyconConfig>::CallbackType dyn_srv_cb_;
+        // dynamic_reconfigure::Server<whycon::whyconConfig> dyn_srv_;
+        // dynamic_reconfigure::Server<whycon::whyconConfig>::CallbackType dyn_srv_cb_;
 
         bool identify_;
         bool publish_tf_;
-        tf2_ros::TransformBroadcaster tf_broad_;
+        // tf2_ros::TransformBroadcaster tf_broad_;
 };
 
-}
+}  // namespace whycon_ros2
 
 
-#endif
+#endif  // WHYCON_ROS_CWHYCONROS2NODE_H
