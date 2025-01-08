@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- <node pkg="rqt_reconfigure" type="rqt_reconfigure" name="reconfigurator"/> -->
+  
+  <arg name="cam_info"  default="/camera/camera/color/camera_info" />
+  <arg name="cam_raw"   default="/camera/camera/color/image_raw/compressed" />
+
+  <arg name="circle_diameter" default="0.2" />
+  <arg name="id_bits"         default="2" />
+  <arg name="id_samples"      default="720" />
+  <arg name="hamming_dist"    default="1" />
+  <arg name="num_markers"     default="1" />
+
+  <arg name="pub_tf"        default="false" />
+  <arg name="pub_visual"    default="false" />
+  <arg name="use_gui"       default="true" />
+  
+  <arg name="calib_file"    default="" />
+  <arg name="coords_method" default="0" />
+
+  <node pkg="whycode" exec="whycode_node" name="whycode_node">
+    <remap from="/camera/camera_info" to="$(var cam_info)"/>
+    <!-- <remap from="/camera/image_raw"   to="$(var cam_raw)"/> -->
+    
+    <param name="use_gui"         value="$(var use_gui)"/>
+    <param name="circle_diameter" value="$(var circle_diameter)"/>
+    <param name="id_bits"         value="$(var id_bits)"/>
+    <param name="id_samples"      value="$(var id_samples)"/>
+    <param name="hamming_dist"    value="$(var hamming_dist)"/>
+    <param name="num_markers"     value="$(var num_markers)"/>
+    
+    <param name="calib_file"      value="$(var calib_file)"/>
+    <param name="coords_method"   value="$(var coords_method)"/>
+  </node>
+
+</launch>

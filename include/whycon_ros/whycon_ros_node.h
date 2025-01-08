@@ -6,21 +6,19 @@
 #include <rclcpp/rclcpp.hpp>
 #include <image_transport/image_transport.hpp>
 
-// #include <dynamic_reconfigure/server.h>
-// #include <tf2_ros/transform_broadcaster.h>
-// #include "whycon/whyconConfig.h"
-
+#include <geometry_msgs/msg/transform_stamped.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
+#include <sensor_msgs/msg/image.hpp>
 
-#include <whycon/srv/select_marker.hpp>
-#include <whycon/srv/set_calib_method.hpp>
-#include <whycon/srv/set_calib_path.hpp>
-#include <whycon/srv/set_coords.hpp>
-#include <whycon/srv/set_drawing.hpp>
-#include <whycon/srv/get_gui_settings.hpp>
+#include <whycode_interfaces/srv/select_marker.hpp>
+#include <whycode_interfaces/srv/set_calib_method.hpp>
+#include <whycode_interfaces/srv/set_calib_path.hpp>
+#include <whycode_interfaces/srv/set_coords.hpp>
+#include <whycode_interfaces/srv/set_drawing.hpp>
+#include <whycode_interfaces/srv/get_gui_settings.hpp>
 
-#include <whycon/msg/marker_array.hpp>
-#include <whycon/msg/marker.hpp>
+#include <whycode_interfaces/msg/marker_array.hpp>
+#include <whycode_interfaces/msg/marker.hpp>
 
 #include "whycon/whycon.h"
 
@@ -28,33 +26,31 @@
 namespace whycon_ros2
 {
 
-class CWhyconROSNode
+class CWhyconROSNode : public rclcpp::Node
 {
 
     public:
-        void getGuiSettingsCallback(const std::shared_ptr<whycon::srv::GetGuiSettings::Request> req,
-                                          std::shared_ptr<whycon::srv::GetGuiSettings::Response> res);
+        void getGuiSettingsCallback(const std::shared_ptr<whycode_interfaces::srv::GetGuiSettings::Request> req,
+                                          std::shared_ptr<whycode_interfaces::srv::GetGuiSettings::Response> res);
 
-        void setDrawingCallback(const std::shared_ptr<whycon::srv::SetDrawing::Request> req,
-                                      std::shared_ptr<whycon::srv::SetDrawing::Response> res);
+        void setDrawingCallback(const std::shared_ptr<whycode_interfaces::srv::SetDrawing::Request> req,
+                                      std::shared_ptr<whycode_interfaces::srv::SetDrawing::Response> res);
 
-        void setCoordsCallback(const std::shared_ptr<whycon::srv::SetCoords::Request> req,
-                                     std::shared_ptr<whycon::srv::SetCoords::Response> res);
+        void setCoordsCallback(const std::shared_ptr<whycode_interfaces::srv::SetCoords::Request> req,
+                                     std::shared_ptr<whycode_interfaces::srv::SetCoords::Response> res);
 
-        void setCalibMethodCallback(const std::shared_ptr<whycon::srv::SetCalibMethod::Request> req,
-                                          std::shared_ptr<whycon::srv::SetCalibMethod::Response> res);
+        void setCalibMethodCallback(const std::shared_ptr<whycode_interfaces::srv::SetCalibMethod::Request> req,
+                                          std::shared_ptr<whycode_interfaces::srv::SetCalibMethod::Response> res);
 
-        void setCalibPathCallback(const std::shared_ptr<whycon::srv::SetCalibPath::Request> req,
-                                        std::shared_ptr<whycon::srv::SetCalibPath::Response> res);
+        void setCalibPathCallback(const std::shared_ptr<whycode_interfaces::srv::SetCalibPath::Request> req,
+                                        std::shared_ptr<whycode_interfaces::srv::SetCalibPath::Response> res);
 
-        void selectMarkerCallback(const std::shared_ptr<whycon::srv::SelectMarker::Request> req,
-                                        std::shared_ptr<whycon::srv::SelectMarker::Response> res);
-
-        // void reconfigureCallback(whycon::whyconConfig& config, uint32_t level);
+        void selectMarkerCallback(const std::shared_ptr<whycode_interfaces::srv::SelectMarker::Request> req,
+                                        std::shared_ptr<whycode_interfaces::srv::SelectMarker::Response> res);
 
         void cameraInfoCallback(const sensor_msgs::msg::CameraInfo::SharedPtr msg);
 
-        void imageCallback(const sensor_msgs::msg::Image::ConstPtr &msg);
+        void imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &msg);
 
         void start();
 
@@ -63,24 +59,23 @@ class CWhyconROSNode
         ~CWhyconROSNode();
 
     private:
-        std::shared_ptr<rclcpp::Node> node;
 
-        rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr cam_info_sub_;
+        rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr      cam_info_sub_;
+        rclcpp::Publisher<whycode_interfaces::msg::MarkerArray>::SharedPtr markers_pub_;
+
         image_transport::Subscriber img_sub_;
+        image_transport::Publisher  img_pub_;
+        
+        rclcpp::Service<whycode_interfaces::srv::GetGuiSettings>::SharedPtr gui_settings_srv_;
+        rclcpp::Service<whycode_interfaces::srv::SetDrawing>::SharedPtr     drawing_srv_;
+        rclcpp::Service<whycode_interfaces::srv::SetCoords>::SharedPtr      coord_system_srv_;
+        rclcpp::Service<whycode_interfaces::srv::SetCalibMethod>::SharedPtr calib_method_srv_;
+        rclcpp::Service<whycode_interfaces::srv::SetCalibPath>::SharedPtr   calib_path_srv_;
+        rclcpp::Service<whycode_interfaces::srv::SelectMarker>::SharedPtr   select_marker_srv_;
 
-        image_transport::Publisher img_pub_;
-        rclcpp::Publisher<whycon::msg::MarkerArray>::SharedPtr markers_pub_;
-        // ros::Publisher visual_pub_;
+
 
         bool draw_coords_;
-        rclcpp::Service<whycon::srv::GetGuiSettings>::SharedPtr gui_settings_srv_;
-        rclcpp::Service<whycon::srv::SetDrawing>::SharedPtr drawing_srv_;
-        rclcpp::Service<whycon::srv::SetCoords>::SharedPtr coord_system_srv_;
-        rclcpp::Service<whycon::srv::SetCalibMethod>::SharedPtr calib_method_srv_;
-        rclcpp::Service<whycon::srv::SetCalibPath>::SharedPtr calib_path_srv_;
-        rclcpp::Service<whycon::srv::SelectMarker>::SharedPtr select_marker_srv_;
-        
-        bool publish_visual_;   // whether to publish visualization msgs
         bool use_gui_;          // generate images for graphic interface?
         whycon::CWhycon whycon_;        // WhyCon instance
         whycon::CRawImage *image_;      // image wrapper for WhyCon
@@ -91,12 +86,7 @@ class CWhyconROSNode
         std::vector<float> intrinsic_mat_;        // intrinsic matrix from camera_info topic
         std::vector<float> distortion_coeffs_;    // distortion parameters from camera_info topic
 
-        // dynamic_reconfigure::Server<whycon::whyconConfig> dyn_srv_;
-        // dynamic_reconfigure::Server<whycon::whyconConfig>::CallbackType dyn_srv_cb_;
-
         bool identify_;
-        bool publish_tf_;
-        // tf2_ros::TransformBroadcaster tf_broad_;
 };
 
 }  // namespace whycon_ros2
