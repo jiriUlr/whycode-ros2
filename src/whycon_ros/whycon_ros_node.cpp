@@ -184,15 +184,9 @@ void CWhyconROSNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr
         marker_array.markers.push_back(marker);
     }
 
-    if(marker_array.markers.size() == 1)
+    if(marker_array.markers.size() > 0)
     {
-	if(marker_array.markers[0].id == 2)
-	{
-            std_msgs::msg::Float32 dist_msg;
-            dist_msg.data = marker_array.markers[0].position.position.x;
-            distance_pub_->publish(dist_msg);
-            markers_pub_->publish(marker_array);
-	}
+        markers_pub_->publish(marker_array);
     }
 
     if(use_gui_)
@@ -260,21 +254,20 @@ CWhyconROSNode::CWhyconROSNode() :
 
 
     cam_info_sub_ = this->create_subscription<sensor_msgs::msg::CameraInfo>(info_topic, 1, std::bind(&CWhyconROSNode::cameraInfoCallback, this, _1));
-    markers_pub_ = this->create_publisher<whycode_interfaces::msg::MarkerArray>("markers", 1);
-    distance_pub_ = this->create_publisher<std_msgs::msg::Float32>("/whycode/distance", 1);
+    markers_pub_ = this->create_publisher<whycode_interfaces::msg::MarkerArray>("~/markers", 1);
 
     // "image_transport" parameter can chagne the transport during startup. default is "raw" (see image_transport::TransportHints)
     img_sub_ = image_transport::create_subscription(this, img_base_topic, std::bind(&CWhyconROSNode::imageCallback, this, _1), img_transport);
-    img_pub_ = image_transport::create_publisher(this, "processed_image");
+    img_pub_ = image_transport::create_publisher(this, "~/processed_image");
 
 
     
-    gui_settings_srv_ = this->create_service<whycode_interfaces::srv::GetGuiSettings>("get_gui_settings", std::bind(&CWhyconROSNode::getGuiSettingsCallback, this, _1, _2));
-    drawing_srv_ = this->create_service<whycode_interfaces::srv::SetDrawing>("set_drawing", std::bind(&CWhyconROSNode::setDrawingCallback, this, _1, _2));
-    coord_system_srv_ = this->create_service<whycode_interfaces::srv::SetCoords>("set_coords", std::bind(&CWhyconROSNode::setCoordsCallback, this, _1, _2));
-    calib_method_srv_ = this->create_service<whycode_interfaces::srv::SetCalibMethod>("set_calib_method", std::bind(&CWhyconROSNode::setCalibMethodCallback, this, _1, _2));
-    calib_path_srv_ = this->create_service<whycode_interfaces::srv::SetCalibPath>("set_calib_path", std::bind(&CWhyconROSNode::setCalibPathCallback, this, _1, _2));
-    select_marker_srv_ = this->create_service<whycode_interfaces::srv::SelectMarker>("select_marker", std::bind(&CWhyconROSNode::selectMarkerCallback, this, _1, _2));
+    gui_settings_srv_ = this->create_service<whycode_interfaces::srv::GetGuiSettings>("~/get_gui_settings", std::bind(&CWhyconROSNode::getGuiSettingsCallback, this, _1, _2));
+    drawing_srv_ = this->create_service<whycode_interfaces::srv::SetDrawing>("~/set_drawing", std::bind(&CWhyconROSNode::setDrawingCallback, this, _1, _2));
+    coord_system_srv_ = this->create_service<whycode_interfaces::srv::SetCoords>("~/set_coords", std::bind(&CWhyconROSNode::setCoordsCallback, this, _1, _2));
+    calib_method_srv_ = this->create_service<whycode_interfaces::srv::SetCalibMethod>("~/set_calib_method", std::bind(&CWhyconROSNode::setCalibMethodCallback, this, _1, _2));
+    calib_path_srv_ = this->create_service<whycode_interfaces::srv::SetCalibPath>("~/set_calib_path", std::bind(&CWhyconROSNode::setCalibPathCallback, this, _1, _2));
+    select_marker_srv_ = this->create_service<whycode_interfaces::srv::SelectMarker>("~/select_marker", std::bind(&CWhyconROSNode::selectMarkerCallback, this, _1, _2));
 
 
 
