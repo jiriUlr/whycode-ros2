@@ -1,11 +1,12 @@
-#ifndef WHYCON_ROS_CWHYCONROS2NODE_H
-#define WHYCON_ROS_CWHYCONROS2NODE_H
+#ifndef WHYCODEROS2_CWHYCONROSNODE_H
+#define WHYCODEROS2_CWHYCONROSNODE_H
 
 #include <vector>
 
 #include <rclcpp/rclcpp.hpp>
 #include <image_transport/image_transport.hpp>
 
+#include <std_msgs/msg/float32.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/image.hpp>
@@ -23,7 +24,7 @@
 #include "whycon/whycon.h"
 
 
-namespace whycon_ros2
+namespace whycode_ros2
 {
 
 class CWhyconROSNode : public rclcpp::Node
@@ -52,8 +53,6 @@ class CWhyconROSNode : public rclcpp::Node
 
         void imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &msg);
 
-        void start();
-
         CWhyconROSNode();
 
         ~CWhyconROSNode();
@@ -62,6 +61,7 @@ class CWhyconROSNode : public rclcpp::Node
 
         rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr      cam_info_sub_;
         rclcpp::Publisher<whycode_interfaces::msg::MarkerArray>::SharedPtr markers_pub_;
+        rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr               distance_pub_;
 
         image_transport::Subscriber img_sub_;
         image_transport::Publisher  img_pub_;
@@ -87,9 +87,11 @@ class CWhyconROSNode : public rclcpp::Node
         std::vector<float> distortion_coeffs_;    // distortion parameters from camera_info topic
 
         bool identify_;
+        int num_markers_;
+        int min_size_;
 };
 
-}  // namespace whycon_ros2
+}  // namespace whycode_ros2
 
 
-#endif  // WHYCON_ROS_CWHYCONROS2NODE_H
+#endif  // WHYCODEROS2_CWHYCONROSNODE_H

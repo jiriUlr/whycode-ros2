@@ -8,7 +8,7 @@
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-namespace whycon_ros2
+namespace whycode_ros2
 {
 
 void CWhyconROSNode::getGuiSettingsCallback(const std::shared_ptr<whycode_interfaces::srv::GetGuiSettings::Request> req,
@@ -171,7 +171,6 @@ void CWhyconROSNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr
         marker.v = detection.seg.y;
         marker.angle = detection.obj.angle;
 
-        // Convert to ROS standard Coordinate System
         marker.position.position.x = detection.obj.x;
         marker.position.position.y = detection.obj.y;
         marker.position.position.z = detection.obj.z;
@@ -185,7 +184,16 @@ void CWhyconROSNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr
         marker_array.markers.push_back(marker);
     }
 
-    markers_pub_->publish(marker_array);
+    if(marker_array.markers.size() == 1)
+    {
+	if(marker_array.markers[0].id == 2)
+	{
+            std_msgs::msg::Float32 dist_msg;
+            dist_msg.data = marker_array.markers[0].position.position.x;
+            distance_pub_->publish(dist_msg);
+            markers_pub_->publish(marker_array);
+	}
+    }
 
     if(use_gui_)
     {
@@ -195,11 +203,8 @@ void CWhyconROSNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr
         out_msg.width = msg->width;
         out_msg.encoding = msg->encoding;
         out_msg.step = msg->step;
-
         out_msg.data.resize(msg->step * msg->height);
-
         std::memcpy((void*)&out_msg.data[0], image_->data_, msg->step * msg->height);
-        
         img_pub_.publish(out_msg);
     }
 
@@ -214,9 +219,11 @@ CWhyconROSNode::CWhyconROSNode() :
     int id_bits;
     int id_samples;
     int hamming_dist;
-    int num_markers;
     std::string calib_path;
     int coords_method;
+    std::string img_base_topic;
+    std::string img_transport;
+    std::string info_topic;
 
     this->declare_parameter("use_gui", true);
     this->declare_parameter("circle_diameter", 0.122);
@@ -226,30 +233,38 @@ CWhyconROSNode::CWhyconROSNode() :
     this->declare_parameter("num_markers", 10);
     this->declare_parameter("calib_file", std::string(""));
     this->declare_parameter("coords_method", 0);
+    this->declare_parameter("min_size", 20);
+    this->declare_parameter("img_base_topic", std::string(""));
+    this->declare_parameter("img_transport", std::string(""));
+    this->declare_parameter("info_topic", std::string(""));
 
     use_gui_ = this->get_parameter("use_gui").as_bool();
     circle_diameter_ = this->get_parameter("circle_diameter").as_double();
     id_bits = this->get_parameter("id_bits").as_int();
     id_samples = this->get_parameter("id_samples").as_int();
     hamming_dist = this->get_parameter("hamming_dist").as_int();
-    num_markers = this->get_parameter("num_markers").as_int();
+    num_markers_ = this->get_parameter("num_markers").as_int();
     calib_path = this->get_parameter("calib_file").as_string();
     coords_method = this->get_parameter("coords_method").as_int();
-
+    min_size_ = this->get_parameter("min_size").as_int();
+    img_base_topic = this->get_parameter("img_base_topic").as_string();
+    img_transport = this->get_parameter("img_transport").as_string();
+    info_topic = this->get_parameter("info_topic").as_string();
 
     
     int default_width = 640;
     int default_height = 480;
     image_ = new whycon::CRawImage(default_width, default_height, 3);
-    whycon_.init(circle_diameter_, use_gui_, id_bits, id_samples, hamming_dist, num_markers, default_width, default_height);
+    whycon_.init(circle_diameter_, use_gui_, id_bits, id_samples, hamming_dist, num_markers_, default_width, default_height);
     
 
 
-    cam_info_sub_ = this->create_subscription<sensor_msgs::msg::CameraInfo>("/camera/camera_info", 1, std::bind(&CWhyconROSNode::cameraInfoCallback, this, _1));
+    cam_info_sub_ = this->create_subscription<sensor_msgs::msg::CameraInfo>(info_topic, 1, std::bind(&CWhyconROSNode::cameraInfoCallback, this, _1));
     markers_pub_ = this->create_publisher<whycode_interfaces::msg::MarkerArray>("markers", 1);
+    distance_pub_ = this->create_publisher<std_msgs::msg::Float32>("/whycode/distance", 1);
 
     // "image_transport" parameter can chagne the transport during startup. default is "raw" (see image_transport::TransportHints)
-    img_sub_ = image_transport::create_subscription(this, "/camera/camera/color/image_raw", std::bind(&CWhyconROSNode::imageCallback, this, _1), "compressed");
+    img_sub_ = image_transport::create_subscription(this, img_base_topic, std::bind(&CWhyconROSNode::imageCallback, this, _1), img_transport);
     img_pub_ = image_transport::create_publisher(this, "processed_image");
 
 
@@ -263,10 +278,7 @@ CWhyconROSNode::CWhyconROSNode() :
 
 
 
-    identify_ = false;
-    double circle_diameter = 0.122;
-    num_markers = 1;
-    int min_size = 20;
+    identify_ = true;
     double field_length = 1.0;
     double field_width = 1.0;
     double initial_circularity_tolerance = 100.0;
@@ -275,7 +287,7 @@ CWhyconROSNode::CWhyconROSNode() :
     double center_distance_tolerance_ratio = 10.0;
     double center_distance_tolerance_abs = 5.0;
     whycon_.updateConfiguration(
-        identify_, circle_diameter, num_markers, min_size,
+        identify_, circle_diameter_, num_markers_, min_size_,
         field_length, field_width, initial_circularity_tolerance,
         final_circularity_tolerance, area_ratio_tolerance,
         center_distance_tolerance_ratio, center_distance_tolerance_abs
@@ -304,25 +316,12 @@ CWhyconROSNode::~CWhyconROSNode()
     delete image_;
 }
 
-void CWhyconROSNode::start()
-{
-    // while(rclcpp::ok())
-    // {
-    //     rclcpp::spin_some(this);
-    //     usleep(10000);
-    // }
-}
-
-}  // namespace whycon_ros2
+}  // namespace whycode_ros2
 
 int main(int argc, char *argv[])
 {
     rclcpp::init(argc, argv);
-
-    // whycon_ros2::CWhyconROSNode whycon_ros_node;
-    // whycon_ros_node.start();
-
-    rclcpp::spin(std::make_shared<whycon_ros2::CWhyconROSNode>());
+    rclcpp::spin(std::make_shared<whycode_ros2::CWhyconROSNode>());
     rclcpp::shutdown();
 
     return 0;
