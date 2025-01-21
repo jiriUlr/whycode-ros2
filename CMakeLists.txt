@@ -35,6 +35,7 @@ include_directories(include)
 
 add_executable(whycode_node
     src/whycon_ros/whycon_ros_node.cpp
+    src/whycon_ros/CWhyconROSNode.cpp
     src/whycon/CWhycon.cpp
     src/whycon/CCircleDetect.cpp
     src/whycon/CRawImage.cpp
