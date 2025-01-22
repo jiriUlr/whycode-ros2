@@ -56,6 +56,13 @@ class CWhyconROSNode : public rclcpp::Node
 
         ~CWhyconROSNode();
 
+
+
+        void saveCalibration(const std::string &str);
+        void loadCalibration(const std::string &str);
+
+
+
     private:
 
         rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr      cam_info_sub_;

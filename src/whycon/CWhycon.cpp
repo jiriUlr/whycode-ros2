@@ -81,30 +81,6 @@ void CWhycon::manualcalibration()
     }
 }
 
-void CWhycon::loadCalibration(std::string& path)
-{
-    try
-    {
-        trans_->loadCalibration(path);
-    }
-    catch(const std::exception& e)
-    {
-        throw;
-    }
-}
-
-void CWhycon::saveCalibration(std::string& path)
-{
-    try
-    {
-        trans_->saveCalibration(path);
-    }
-    catch(const std::exception& e)
-    {
-        throw;
-    }
-}
-
 void CWhycon::selectMarker(float x, float y)
 {
     // if(mancalibrate_)

@@ -78,6 +78,18 @@ typedef struct
     STrackedObject obj;
 } SMarker;
 
-}
+
+
+struct CalibrationConfig
+{
+    float grid_dim_x_;              // x unit dimention of 2D coordinate
+    float grid_dim_y_;              // y unit dimention of 2D coordinate
+    float hom_[9];                  // transformation description for 2D
+    S3DTransform D3transform_[4];   // transformation description for 3D
+};
+
+
+
+}  // namespace whycon
 
 #endif

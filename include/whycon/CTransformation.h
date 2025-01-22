@@ -34,10 +34,6 @@ class CTransformation
 
         /* transform coordinates into desired system */
         void transformCoordinates(STrackedObject &obj);
-
-        /* I/O calibration file */
-        void saveCalibration(const std::string &str);
-        void loadCalibration(const std::string &str);
         
         /* calculate orientation of marker */
         void calcOrientation(STrackedObject &obj);
@@ -52,6 +48,11 @@ class CTransformation
         /* establish the user-defined coordinate system from four calibration patterns - see 4.4 of [1] */
         void calibrate2D(const STrackedObject *in, const float g_dim_x, const float g_dim_y, const float robot_radius = 0.0, const float robot_height = 0.0, const float camera_height = 1.0);
         void calibrate3D(const STrackedObject *o, const float g_dim_x, const float g_dim_y);
+
+
+
+        void setCalibrationConfig(const CalibrationConfig &config);
+        CalibrationConfig getCalibrationConfig();
 
     private:
         /* transform into planar coordinates */

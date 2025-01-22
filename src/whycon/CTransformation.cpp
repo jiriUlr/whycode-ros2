@@ -180,78 +180,35 @@ void CTransformation::transform3D(STrackedObject &o, const int num)
     o.n2 = final_n[2] / str_all_n;
 }
 
-void CTransformation::loadCalibration(const std::string &str)
+void CTransformation::setCalibrationConfig(const CalibrationConfig &config)
 {
-    try
+    grid_dim_x_ = config.grid_dim_x_;
+    grid_dim_y_ = config.grid_dim_y_;
+    for(int k = 0; k < 9; k++)
     {
-        cv::FileStorage fs(str, cv::FileStorage::READ);
-        if(!fs.isOpened())
-            throw std::runtime_error("Could not open/load calibration file. " + str);
-
-        fs["dim_x"] >> grid_dim_x_;
-        fs["dim_y"] >> grid_dim_y_;
-
-        cv::Mat hom_tmp(3, 3, CV_32FC1);
-        fs["hom"] >> hom_tmp;
-        for(int i = 0; i < 3; i++)
-        {
-            for(int j = 0; j < 3; j++)
-                hom_[3 * i + j] = hom_tmp.at<float>(i, j);
-        }
-
-        for(int k = 0; k < 4; k++)
-        {
-            cv::Mat offset_tmp(3, 1, CV_32FC1);
-            fs["offset_" + std::to_string(k)] >> offset_tmp;
-            for(int i = 0; i < 3; i++)
-                D3transform_[k].orig[i] = offset_tmp.at<float>(i);
-
-            cv::Mat simlar_tmp(3, 3, CV_32FC1);
-            fs["simlar_" + std::to_string(k)] >> simlar_tmp;
-            for(int i = 0; i < 3; i++)
-            {
-                for(int j = 0; j < 3; j++)
-                    D3transform_[k].simlar[3 * i + j] = simlar_tmp.at<float>(i, j);
-            }
-        }
-
-        fs.release();
-        calibrated_ = true;
+        hom_[k] = config.hom_[k];
     }
-    catch(const std::exception& e)
+    for(int k = 0; k < 4; k++)
     {
-        throw;
+        D3transform_[k] = config.D3transform_[k];
     }
+    calibrated_ = true;
 }
 
-void CTransformation::saveCalibration(const std::string &str)
+CalibrationConfig CTransformation::getCalibrationConfig()
 {
-    try
+    CalibrationConfig config;
+    config.grid_dim_x_ = grid_dim_x_;
+    config.grid_dim_y_ = grid_dim_y_;
+    for(int k = 0; k < 9; k++)
     {
-        cv::FileStorage fs(str, cv::FileStorage::WRITE);
-        if(!fs.isOpened())
-            throw std::runtime_error("Could not open/create calibration file. " + str);
-
-        fs.writeComment("Dimensions");
-        fs << "dim_x" << grid_dim_x_;
-        fs << "dim_y" << grid_dim_y_;
-        fs.writeComment("2D calibration");
-        fs << "hom" << cv::Mat(3, 3, CV_32FC1, hom_);
-        fs.writeComment("3D calibration");
-
-        for (int k = 0; k < 4; k++)
-        {
-            fs.writeComment("D3transform " + std::to_string(k));
-            fs << "offset_" + std::to_string(k) << cv::Mat(3, 1, CV_32FC1, D3transform_[k].orig);
-            fs << "simlar_" + std::to_string(k) << cv::Mat(3, 3, CV_32FC1, D3transform_[k].simlar);
-        }
-
-        fs.release();
+        config.hom_[k] = hom_[k];
     }
-    catch(const std::exception& e)
+    for(int k = 0; k < 4; k++)
     {
-        throw;
+        config.D3transform_[k] = D3transform_[k];
     }
+    return config;
 }
 
 void CTransformation::calibrate2D(const STrackedObject *in, const float g_dim_x, const float g_dim_y, const float robot_radius, const float robot_height, const float camera_height)
