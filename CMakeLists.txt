@@ -24,6 +24,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(whycode_interfaces REQUIRED)
+#find_package(rcl_interfaces REQUIRED)
 
 find_package(OpenCV REQUIRED)
 
@@ -34,14 +35,14 @@ find_package(OpenCV REQUIRED)
 include_directories(include)
 
 add_executable(whycode_node
-    src/whycon_ros/whycon_ros_node.cpp
-    src/whycon_ros/CWhyconROSNode.cpp
-    src/whycon/CWhycon.cpp
-    src/whycon/CCircleDetect.cpp
-    src/whycon/CRawImage.cpp
-    src/whycon/CTimer.cpp
-    src/whycon/CTransformation.cpp
-    src/whycon/CNecklace.cpp
+    src/whycode_ros/whycode_ros_node.cpp
+    src/whycode_ros/CWhycodeROSNode.cpp
+    src/whycode/CWhycode.cpp
+    src/whycode/CCircleDetect.cpp
+    src/whycode/CRawImage.cpp
+    src/whycode/CTimer.cpp
+    src/whycode/CTransformation.cpp
+    src/whycode/CNecklace.cpp
     )
 
 ament_target_dependencies(whycode_node rclcpp std_msgs sensor_msgs geometry_msgs image_transport whycode_interfaces OpenCV)

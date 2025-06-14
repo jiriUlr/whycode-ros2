@@ -1,6 +1,6 @@
-#include "whycon/CNecklace.h"
+#include "whycode/CNecklace.h"
 
-namespace whycon
+namespace whycode
 {
 
 CNecklace::CNecklace(int bits, int samples, int minimalHamming)

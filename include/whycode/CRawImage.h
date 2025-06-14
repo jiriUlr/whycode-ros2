@@ -1,19 +1,21 @@
-#ifndef WHYCON__CRAWIMAGE_H
-#define WHYCON__CRAWIMAGE_H
+#ifndef WHYCODE__CRAWIMAGE_H
+#define WHYCODE__CRAWIMAGE_H
 
-#include "whycon/SStructDefs.h"
+#include "whycode/SStructDefs.h"
 
 /**
 @author Tom Krajnik
 */
 
-namespace whycon
+namespace whycode
 {
 
 class CRawImage
 {
 
 public:
+
+  CRawImage();
 
   CRawImage(int width, int height, int bpp);
 
@@ -45,4 +47,4 @@ public:
 
 }
 
-#endif
+#endif  // WHYCODE__CRAWIMAGE_H

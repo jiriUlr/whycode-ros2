@@ -1,27 +1,27 @@
 #include <stdexcept>
 #include <stdio.h>
 
-#include "whycon/CWhycon.h"
+#include "whycode/CWhycode.h"
 
-namespace whycon
+namespace whycode
 {
 
-bool CWhycon::getDrawCoords()
+bool CWhycode::getDrawCoords()
 {
     return draw_coords_;
 }
 
-bool CWhycon::getDrawSegments()
+bool CWhycode::getDrawSegments()
 {
     return draw_segments_;
 }
 
-int CWhycon::getCoordinates()
+int CWhycode::getCoordinates()
 {
     return trans_->getTransformType();
 }
 
-void CWhycon::setDrawing(bool draw_coords, bool draw_segments)
+void CWhycode::setDrawing(bool draw_coords, bool draw_segments)
 {
     draw_coords_ = draw_coords;
     draw_segments_ = draw_segments;
@@ -32,7 +32,7 @@ void CWhycon::setDrawing(bool draw_coords, bool draw_segments)
     }
 }
 
-void CWhycon::setCoordinates(ETransformType trans_type)
+void CWhycode::setCoordinates(ETransformType trans_type)
 {
     try
     {
@@ -44,7 +44,7 @@ void CWhycon::setCoordinates(ETransformType trans_type)
     }
 }
 
-void CWhycon::autocalibration()
+void CWhycode::autocalibration()
 {
     if(num_found_ < 4)
     {
@@ -62,7 +62,7 @@ void CWhycon::autocalibration()
     }
 }
 
-void CWhycon::manualcalibration()
+void CWhycode::manualcalibration()
 {
     if(num_found_ < 4)
     {
@@ -81,7 +81,7 @@ void CWhycon::manualcalibration()
     }
 }
 
-void CWhycon::selectMarker(float x, float y)
+void CWhycode::selectMarker(float x, float y)
 {
     // if(mancalibrate_)
     // {
@@ -106,7 +106,7 @@ void CWhycon::selectMarker(float x, float y)
 
 /*manual calibration can be initiated by pressing 'r'
   and then clicking circles at four positions (0,0)(field_length_,0)...*/
-void CWhycon::manualCalib()
+void CWhycode::manualCalib()
 {
     if(current_marker_array_[0].valid)
     {
@@ -155,7 +155,7 @@ void CWhycon::manualCalib()
 
 /*finds four outermost circles and uses them to set-up the coordinate system
   [0,0] is left-top, [0,field_length_] next in clockwise direction*/
-// void CWhycon::autoCalib()
+// void CWhycode::autoCalib()
 // {
 //     int ok_last_tracks = 0;
 //     for(int i = 0; i < num_markers_; i++)
@@ -219,7 +219,7 @@ void CWhycon::manualCalib()
 //     }
 // }
 
-void CWhycon::autoCalib()
+void CWhycode::autoCalib()
 {
     printf("autocalib start point. step %d\n", calib_step_);
     int ok_last_tracks = 0;
@@ -305,14 +305,8 @@ void CWhycon::autoCalib()
     ++calib_step_;
 }
 
-void CWhycon::processImage(CRawImage *image, std::vector<SMarker> &whycon_detections)
+void CWhycode::processImage(CRawImage *image, std::vector<SMarker> &whycode_detections)
 {
-    if(image_height_ != image->height_ || image_width_ != image->width_)
-    {
-        image_height_ = image->height_;
-        image_width_ = image->width_;
-    }
-
     // setup timers to assess system performance
     CTimer timer;
     num_found_ = num_static_ = 0;
@@ -361,7 +355,7 @@ void CWhycon::processImage(CRawImage *image, std::vector<SMarker> &whycon_detect
     {
         if(current_marker_array_[i].valid)
         {
-            whycon_detections.push_back(current_marker_array_[i]);
+            whycode_detections.push_back(current_marker_array_[i]);
         }
     }
 
@@ -396,21 +390,21 @@ void CWhycon::processImage(CRawImage *image, std::vector<SMarker> &whycon_detect
 }
 
 // cleaning up
-CWhycon::~CWhycon()
+CWhycode::~CWhycode()
 {
     delete trans_;
     delete decoder_;
     for(int i = 0; i < num_markers_; i++) delete detector_array_[i];
 }
 
-CWhycon::CWhycon() :
+CWhycode::CWhycode() :
     draw_coords_(true)
     , draw_segments_(false)
     , calibrated_coords_(false)
 {
 }
 
-void CWhycon::updateConfiguration(bool id, float diam, int markers, int size, double fl, double fw, double ict, double fct, double art, double cdtr, double cdta)
+void CWhycode::updateConfiguration(bool id, float diam, int markers, int size, double fl, double fw, double ict, double fct, double art, double cdtr, double cdta)
 {
     field_length_ = fl;
     field_width_ = fw;
@@ -426,7 +420,7 @@ void CWhycon::updateConfiguration(bool id, float diam, int markers, int size, do
         if(num_markers_ < markers)
         {
             for(int i = num_markers_; i < markers; i++)
-                detector_array_.push_back(new CCircleDetect(image_width_, image_height_, identify_, id_bits_, id_samples_, draw_segments_, trans_, decoder_));
+                detector_array_.push_back(new CCircleDetect(identify_, id_bits_, id_samples_, draw_segments_, trans_, decoder_));
         }
         else
         {
@@ -440,12 +434,12 @@ void CWhycon::updateConfiguration(bool id, float diam, int markers, int size, do
     for(int i = 0; i < num_markers_; i++) detector_array_[i]->reconfigure(ict, fct, art, cdtr, cdta, id, size);
 }
 
-void CWhycon::updateCameraInfo(std::vector<float> &intrinsic_mat, std::vector<float> &distortion_coeffs)
+void CWhycode::updateCameraInfo(std::vector<float> &intrinsic_mat, std::vector<float> &distortion_coeffs)
 {
     trans_->updateCameraParams(intrinsic_mat, distortion_coeffs);
 }
 
-void CWhycon::init(float circle_diam, bool use_gui, int id_b, int id_s, int ham_dist, int markers, int img_w, int img_h)
+void CWhycode::init(float circle_diam, bool use_gui, int id_b, int id_s, int ham_dist, int markers)
 {
     circle_diameter_ = circle_diam;
     use_gui_ = use_gui;
@@ -453,8 +447,6 @@ void CWhycon::init(float circle_diam, bool use_gui, int id_b, int id_s, int ham_
     id_samples_ = id_s;
     hamming_dist_ = ham_dist;
     num_markers_ = markers;
-    image_width_ = img_w;
-    image_height_ = img_h;
 
     calib_tmp_.resize(calibration_steps_);
     current_marker_array_.resize(num_markers_);
@@ -466,7 +458,7 @@ void CWhycon::init(float circle_diam, bool use_gui, int id_b, int id_s, int ham_
     // initialize the circle detectors - each circle has its own detector instance
     detector_array_.resize(num_markers_);
     for(int i = 0; i < num_markers_; i++)
-        detector_array_[i] = new CCircleDetect(image_width_, image_height_, identify_, id_bits_, id_samples_, draw_segments_, trans_, decoder_);
+        detector_array_[i] = new CCircleDetect(identify_, id_bits_, id_samples_, draw_segments_, trans_, decoder_);
 
 }
 

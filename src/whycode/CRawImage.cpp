@@ -4,10 +4,19 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 
-#include "whycon/CRawImage.h"
+#include "whycode/CRawImage.h"
 
-namespace whycon
+namespace whycode
 {
+
+CRawImage::CRawImage()
+{
+    width_ = 0;
+    height_ = 0;
+    bpp_ = 0;
+    size_ = 0;
+    data_ = NULL;
+}
 
 CRawImage::CRawImage(int width, int height, int bpp) :
     width_(width),

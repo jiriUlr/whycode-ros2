@@ -1,5 +1,5 @@
-#ifndef WHYCON__CTIMER_H
-#define WHYCON__CTIMER_H
+#ifndef WHYCODE__CTIMER_H
+#define WHYCODE__CTIMER_H
 
 /**
 @author Tom Krajnik
@@ -10,7 +10,7 @@
 
 #define TIMEOUT_INTERVAL 40000
 
-namespace whycon
+namespace whycode
 {
 
 class CTimer
@@ -37,4 +37,4 @@ class CTimer
 
 }
 
-#endif
+#endif  // WHYCODE__CTIMER_H

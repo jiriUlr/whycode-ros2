@@ -10,10 +10,10 @@
   <author email="ulricji1@fel.cvut.cz">Jiří Ulrich</author>
   <author email="krajnt1@fel.cvut.cz">Tomáš Krajník</author>
 
-  <license file="LICENSE">CUSTOM LICENSE FILE</license>
+  <license file="LICENSE">See LICENSE file</license>
 
   <!-- TODO update website -->
-  <url>https://github.com/jiriUlr/whycon-ros</url>
+  <url>TODO</url>
 
   <buildtool_depend>ament_cmake_ros</buildtool_depend>
   
@@ -23,6 +23,7 @@
   <depend>geometry_msgs</depend>
   <depend>image_transport</depend>
   <depend>whycode_interfaces</depend>
+  <!-- <depend>rcl_interfaces</depend> -->
 
   <depend>opencv</depend>
 

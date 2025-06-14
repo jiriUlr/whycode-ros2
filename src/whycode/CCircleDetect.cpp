@@ -1,24 +1,19 @@
 #include <cstdio>
-#include "whycon/CCircleDetect.h"
+#include "whycode/CCircleDetect.h"
 
 #define min(a,b) ((a) < (b) ? (a) : (b))
 #define max(a,b) ((a) > (b) ? (a) : (b))
 
-namespace whycon
+namespace whycode
 {
-
-// int* CCircleDetect::buffer = NULL;
-// int* CCircleDetect::queue = NULL;
 
 std::unique_ptr<int> CCircleDetect::buffer = std::unique_ptr<int>();
 std::unique_ptr<int> CCircleDetect::queue = std::unique_ptr<int>();
+int CCircleDetect::width = 0;
+int CCircleDetect::height = 0;
+int CCircleDetect::len = 0;
 
-
-
-//Variable initialization
-CCircleDetect::CCircleDetect(int wi, int he, bool id, int bits, int samples, bool draw, CTransformation *trans, CNecklace *decoder) :
-    width(wi),
-    height(he),
+CCircleDetect::CCircleDetect(bool id, int bits, int samples, bool draw, CTransformation *trans, CNecklace *decoder) :
     identify(id),
     idBits(bits),
     idSamples(samples),
@@ -43,25 +38,11 @@ CCircleDetect::CCircleDetect(int wi, int he, bool id, int bits, int samples, boo
     track = true;
     circularityTolerance = 0.02;
 
-    //initialization - fixed params
-    len = width * height;
-    ownBuffer = false;
-    if(!buffer)// (buffer == NULL)
-    {
-        ownBuffer = true;
-        // buffer = (int*)malloc(len * sizeof (int));
-        // queue = (int*)malloc(len * sizeof (int));
-        buffer.reset((int*)malloc(len * sizeof (int)));
-        queue.reset((int*)malloc(len * sizeof (int)));
-        SSegment dummy;
-        bufferCleanup(dummy);
-    }
     diameterRatio = 33.0 / 70.0; //inner vs. outer circle diameter
     float areaRatioInner_Outer = diameterRatio * diameterRatio;
     outerAreaRatio = M_PI * (1.0 - areaRatioInner_Outer) / 4;
     innerAreaRatio = M_PI / 4.0;
     areasRatio = (1.0 - areaRatioInner_Outer) / areaRatioInner_Outer;
-    sizer = sizerAll = 0;
 }
 
 void CCircleDetect::reconfigure(float ict, float fct, float art, float cdtr, float cdta, bool id, int minS)
@@ -80,10 +61,6 @@ void CCircleDetect::adjustDimensions(int wi, int he)
     width = wi;
     height = he;
     len = width * height;
-    // free(buffer);
-    // free(queue);
-    // buffer = (int*)malloc(len * sizeof (int));
-    // queue = (int*)malloc(len * sizeof (int));
     buffer.reset((int*)malloc(len * sizeof (int)));
     queue.reset((int*)malloc(len * sizeof (int)));
     SSegment dummy;
@@ -92,11 +69,7 @@ void CCircleDetect::adjustDimensions(int wi, int he)
 
 CCircleDetect::~CCircleDetect()
 {
-    // if (ownBuffer)
-    // {
-    //     free(buffer);
-    //     free(queue);
-    // }
+
 }
 
 bool CCircleDetect::changeThreshold()
@@ -379,8 +352,6 @@ SMarker CCircleDetect::findSegment(CRawImage* image, SSegment init)
                                 outer = calcSegment(outer, queueEnd, six, siy, cm0, cm1, cm2);
                                 outer.bwRatio = (float)inner.size / outer.size;
 
-                                sizer += outer.size + inner.size; //for debugging
-                                sizerAll += len;                                  //for debugging
                                 float circularity = M_PI * 4 * (outer.m0) * (outer.m1) / queueEnd;
                                 if (debug) fprintf(stdout,"Segment circularity: %i %03f %03f \n",queueEnd,M_PI*4*(outer.m0)*(outer.m1)/queueEnd,M_PI*4*(outer.m0)*(outer.m1));
                                 if (circularity - 1.0 < circularityTolerance && circularity - 1.0 > -circularityTolerance)

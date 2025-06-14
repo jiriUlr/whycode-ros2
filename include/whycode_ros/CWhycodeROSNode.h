@@ -1,5 +1,5 @@
-#ifndef WHYCODEROS2_CWHYCONROSNODE_H
-#define WHYCODEROS2_CWHYCONROSNODE_H
+#ifndef WHYCODEROS2_CWHYCODEROSNODE_H
+#define WHYCODEROS2_CWHYCODEROSNODE_H
 
 #include <vector>
 
@@ -9,6 +9,8 @@
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/image.hpp>
+
+// #include <rcl_interfaces/msg/SetParametersResult.hpp>
 
 #include <whycode_interfaces/srv/select_marker.hpp>
 #include <whycode_interfaces/srv/set_calib_method.hpp>
@@ -20,13 +22,13 @@
 #include <whycode_interfaces/msg/marker_array.hpp>
 #include <whycode_interfaces/msg/marker.hpp>
 
-#include "whycon/whycon.h"
+#include "whycode/whycode.h"
 
 
 namespace whycode_ros2
 {
 
-class CWhyconROSNode : public rclcpp::Node
+class CWhycodeROSNode : public rclcpp::Node
 {
 
     public:
@@ -52,18 +54,25 @@ class CWhyconROSNode : public rclcpp::Node
 
         void imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &msg);
 
-        CWhyconROSNode();
+        CWhycodeROSNode();
 
-        ~CWhyconROSNode();
+        ~CWhycodeROSNode();
+
+        void declareParameters();
 
 
 
         void saveCalibration(const std::string &str);
         void loadCalibration(const std::string &str);
+        rcl_interfaces::msg::SetParametersResult validate_upcoming_parameters_callback(const std::vector<rclcpp::Parameter> & parameters);
+        void react_to_updated_parameters_callback(const std::vector<rclcpp::Parameter> & parameters);
 
 
 
     private:
+
+        rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr   on_set_parameters_callback_handle_;
+        rclcpp::node_interfaces::PostSetParametersCallbackHandle::SharedPtr post_set_parameters_callback_handle_;
 
         rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr      cam_info_sub_;
         rclcpp::Publisher<whycode_interfaces::msg::MarkerArray>::SharedPtr markers_pub_;
@@ -82,11 +91,11 @@ class CWhyconROSNode : public rclcpp::Node
 
         bool draw_coords_;
         bool use_gui_;          // generate images for graphic interface?
-        whycon::CWhycon whycon_;        // WhyCon instance
-        whycon::CRawImage *image_;      // image wrapper for WhyCon
+        whycode::CWhycode whycode_;        // WhyCon instance
+        whycode::CRawImage *image_;      // image wrapper for WhyCon
         double circle_diameter_;  // marker diameter [m]
 
-        std::vector<whycon::SMarker> whycon_detections_;    // array of detected markers
+        std::vector<whycode::SMarker> whycode_detections_;    // array of detected markers
         
         std::vector<float> intrinsic_mat_;        // intrinsic matrix from camera_info topic
         std::vector<float> distortion_coeffs_;    // distortion parameters from camera_info topic
@@ -99,4 +108,4 @@ class CWhyconROSNode : public rclcpp::Node
 }  // namespace whycode_ros2
 
 
-#endif  // WHYCODEROS2_CWHYCONROSNODE_H
+#endif  // WHYCODEROS2_CWHYCODEROSNODE_H

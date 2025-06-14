@@ -7,15 +7,15 @@
  * References: [1] Krajnik, Nitsche et al.: A practical multirobot localization system. Journal of Intelligent and Robotic Systems, 2014.
  */
 
-#ifndef WHYCON__CTRANSFORMATION_H
-#define WHYCON__CTRANSFORMATION_H
+#ifndef WHYCODE__CTRANSFORMATION_H
+#define WHYCODE__CTRANSFORMATION_H
 
 #include <string>
 #include <opencv2/opencv.hpp>
 
-#include "whycon/SStructDefs.h"
+#include "whycode/SStructDefs.h"
 
-namespace whycon
+namespace whycode
 {
 
 class CTransformation
@@ -96,6 +96,6 @@ class CTransformation
         cv::Mat distortion_coeffs_;     // camera distortion parameters
 };
 
-} // namespace whycon
+} // namespace whycode
 
-#endif  // WHYCON__CTRANSFORMATION_H
+#endif  // WHYCODE__CTRANSFORMATION_H

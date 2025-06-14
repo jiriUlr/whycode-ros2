@@ -1,6 +1,6 @@
-#include "whycon/CTimer.h"
+#include "whycode/CTimer.h"
 
-namespace whycon
+namespace whycode
 {
 
 CTimer::CTimer(int timeout)

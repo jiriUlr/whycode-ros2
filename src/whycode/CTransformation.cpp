@@ -10,9 +10,9 @@
 #include <cstdio>
 #include <cmath>
 
-#include "whycon/CTransformation.h"
+#include "whycode/CTransformation.h"
 
-namespace whycon
+namespace whycode
 {
 
 CTransformation::CTransformation(float circle_diam) :

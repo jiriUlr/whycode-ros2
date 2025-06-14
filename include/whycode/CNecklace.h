@@ -1,12 +1,12 @@
-#ifndef WHYCON__CNECKLACE_H
-#define WHYCON__CNECKLACE_H
+#ifndef WHYCODE__CNECKLACE_H
+#define WHYCODE__CNECKLACE_H
 
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
-#include "whycon/SStructDefs.h"
+#include "whycode/SStructDefs.h"
 
-namespace whycon
+namespace whycode
 {
 
 typedef struct {
@@ -51,4 +51,4 @@ class CNecklace {
 
 }
 
-#endif
+#endif  // WHYCODE__CNECKLACE_H

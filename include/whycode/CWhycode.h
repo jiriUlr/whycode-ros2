@@ -1,5 +1,5 @@
-#ifndef WHYCON__CWHYCON_H
-#define WHYCON__CWHYCON_H
+#ifndef WHYCODE__CWHYCON_H
+#define WHYCODE__CWHYCON_H
 
 #include <vector>
 #include <deque>
@@ -10,21 +10,19 @@
 #include <cmath>
 
 // WhyCon/WhyCode libs
-#include "whycon/CTimer.h"
-#include "whycon/CCircleDetect.h"
-#include "whycon/CTransformation.h"
-#include "whycon/CNecklace.h"
-#include "whycon/CRawImage.h"
+#include "whycode/CTimer.h"
+#include "whycode/CCircleDetect.h"
+#include "whycode/CTransformation.h"
+#include "whycode/CNecklace.h"
+#include "whycode/CRawImage.h"
 
-namespace whycon
+namespace whycode
 {
 
-class CWhycon {
+class CWhycode {
 
     public:
 
-        int image_width_ = 640;         // default camera resolution
-        int image_height_ = 480;        // default camera resolution
         float circle_diameter_;         // default black circle diameter [m];
         float field_length_ = 1.0;      // X dimension of the coordinate system
         float field_width_ = 1.0;       // Y dimension of the coordinate system
@@ -40,10 +38,10 @@ class CWhycon {
         int id_samples_;    // num of samples to identify ID
         int hamming_dist_;  // hamming distance of ID code
 
-        CWhycon();
-        ~CWhycon();
+        CWhycode();
+        ~CWhycode();
         
-        void init(float circle_diam, bool use_gui, int id_b, int id_s, int ham_dist, int markers, int img_w, int img_h);
+        void init(float circle_diam, bool use_gui, int id_b, int id_s, int ham_dist, int markers);
         void setDrawing(bool draw_coords, bool draw_segments);
         void setCoordinates(ETransformType type);
         void autocalibration();
@@ -51,7 +49,7 @@ class CWhycon {
         void selectMarker(float x, float y);
         void updateConfiguration(bool id, float diam, int markers, int size, double fl, double fw, double ict, double fct, double art, double cdtr, double cdta);
         void updateCameraInfo(std::vector<float> &intrinsic_mat, std::vector<float> &distortion_coeffs);
-        void processImage(CRawImage *image, std::vector<SMarker> &whycon_detections);
+        void processImage(CRawImage *image, std::vector<SMarker> &whycode_detections);
         bool getDrawCoords();
         bool getDrawSegments();
         int getCoordinates();
@@ -118,4 +116,4 @@ class CWhycon {
 
 }
 
-#endif
+#endif  // WHYCODE__CWHYCON_H

@@ -1,7 +1,7 @@
-#ifndef WHYCON__SSTRUCTDEFS_H
-#define WHYCON__SSTRUCTDEFS_H
+#ifndef WHYCODE__SSTRUCTDEFS_H
+#define WHYCODE__SSTRUCTDEFS_H
 
-namespace whycon
+namespace whycode
 {
 
 typedef struct
@@ -90,6 +90,6 @@ struct CalibrationConfig
 
 
 
-}  // namespace whycon
+}  // namespace whycode
 
-#endif
+#endif  // WHYCODE__SSTRUCTDEFS_H

@@ -1,21 +1,20 @@
-#ifndef WHYCON__CCIRCLEDETECT_H
-#define WHYCON__CCIRCLEDETECT_H
+#ifndef WHYCODE__CCIRCLEDETECT_H
+#define WHYCODE__CCIRCLEDETECT_H
 
 #include <math.h>
 #include <memory>
-#include "whycon/CRawImage.h"
-#include "whycon/CTransformation.h"
-#include "whycon/CNecklace.h"
-#include "whycon/SStructDefs.h"
+#include "whycode/CRawImage.h"
+#include "whycode/CTransformation.h"
+#include "whycode/CNecklace.h"
+#include "whycode/SStructDefs.h"
 
 /*TODO note #07*/
 #define COLOR_PRECISION 32
 #define COLOR_STEP 8
 #define INNER 0
 #define OUTER 1
-#define MAX_PATTERNS 50
 
-namespace whycon
+namespace whycode
 {
 
 typedef struct{
@@ -28,7 +27,7 @@ typedef struct{
 class CCircleDetect {
     public:
         //constructor, wi and he correspond to the image dimensions 
-        CCircleDetect(int wi, int he, bool id, int bits, int samples, bool draw, CTransformation *trans, CNecklace *decoder);
+        CCircleDetect(bool id, int bits, int samples, bool draw, CTransformation *trans, CNecklace *decoder);
 
         //deallocate the detector's structures
         ~CCircleDetect();
@@ -38,6 +37,15 @@ class CCircleDetect {
 
         //main detection method, implements Algorithm 2 of [1] 
         SMarker findSegment(CRawImage* image, SSegment init);
+
+        void setDraw(bool draw);
+
+        int debug;                  // debug level
+        bool draw_, lastTrackOK;     // flags to draw results - used for debugging
+        bool localSearch;           // used when selecting the circle by mouse click
+        bool identify;              // attempt to identify segments
+
+    private:
 
         //local pattern search - implements Algorithm 1 of [1]
         bool examineSegment(CRawImage* image,SSegment *segmen,int ii,float areaRatio);
@@ -59,14 +67,7 @@ class CCircleDetect {
 
         bool ambiguityAndObtainCode(CRawImage *image);
         void ambiguityPlain();
-        void setDraw(bool draw);
 
-        int debug;                  // debug level
-        bool draw_, lastTrackOK;     // flags to draw results - used for debugging
-        bool localSearch;           // used when selecting the circle by mouse click
-        bool identify;              // attempt to identify segments
-
-    private:
         CTransformation *trans_;
         CNecklace *decoder_;
         
@@ -97,21 +98,16 @@ class CCircleDetect {
         SSegment outer;
         float outerAreaRatio, innerAreaRatio, areasRatio;
         int queueStart, queueEnd, queueOldStart, numSegments;
-        int width, height, len;
         int expand[4];
         unsigned char *ptr;
-        int tima, timb, timc, timd, sizer, sizerAll;
         float diameterRatio;
         bool ownBuffer;
-        // static int *buffer;
-        // static int *queue;
+
+        static int width;
+        static int height;
+        static int len;
         static std::unique_ptr<int> buffer;
         static std::unique_ptr<int> queue;
-        // static int *mask;
-        // static int maskNum;
-        float idx[MAX_PATTERNS];
-        float idy[MAX_PATTERNS];
-        int numberIDs;
 
         SEllipseCenters ellipse_centers;
         STrackedObject tracked_object;
@@ -119,6 +115,4 @@ class CCircleDetect {
 
 }
 
-#endif
-
-/* end of CCircleDetect.h */
+#endif  // WHYCODE__CCIRCLEDETECT_H
