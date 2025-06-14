@@ -198,7 +198,7 @@ void CWhycodeROSNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPt
         out_msg.encoding = msg->encoding;
         out_msg.step = msg->step;
         out_msg.data.resize(msg->step * msg->height);
-        std::memcpy((void*)&out_msg.data[0], image_->data_, msg->step * msg->height);
+        std::memcpy((void*)&out_msg.data[0], image_->data_.data(), msg->step * msg->height);
         img_pub_.publish(out_msg);
     }
 
@@ -208,6 +208,7 @@ void CWhycodeROSNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPt
 void CWhycodeROSNode::declareParameters()
 {
     // rcl_interfaces::msg::FloatingPointRange range;
+    // range.from_value = std::numeric_limits<double>::min();
     // range.to_value = std::numeric_limits<double>::max();
     // rcl_interfaces::msg::ParameterDescriptor descriptor;
     // descriptor.name = "circle_diameter";
@@ -228,7 +229,7 @@ void CWhycodeROSNode::declareParameters()
 CWhycodeROSNode::CWhycodeROSNode() :
     intrinsic_mat_(9),
     distortion_coeffs_(5),
-    Node("whycode")
+    Node("whycode_node")
 {
     int id_bits;
     int id_samples;
@@ -239,7 +240,7 @@ CWhycodeROSNode::CWhycodeROSNode() :
     std::string img_transport;
     std::string info_topic;
 
-    declareParameters();
+    // declareParameters();
 
     use_gui_ = this->declare_parameter("use_gui", true);
     id_bits = this->declare_parameter("id_bits", 6);

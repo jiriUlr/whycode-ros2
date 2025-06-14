@@ -624,7 +624,7 @@ bool CCircleDetect::ambiguityAndObtainCode(CRawImage *image)
         //retrieve the image brightness on these using bilinear transformation
         float gx, gy;
         int px, py;
-        unsigned char* ptr = image->data_;
+        unsigned char* ptr = image->data_.data();
         for (int a = 0; a < idSamples; a++)
         {
             px = x[i][a];

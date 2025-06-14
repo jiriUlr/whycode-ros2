@@ -1,11 +1,9 @@
 #ifndef WHYCODE__CRAWIMAGE_H
 #define WHYCODE__CRAWIMAGE_H
 
-#include "whycode/SStructDefs.h"
+#include <vector>
 
-/**
-@author Tom Krajnik
-*/
+#include "whycode/SStructDefs.h"
 
 namespace whycode
 {
@@ -15,11 +13,9 @@ class CRawImage
 
 public:
 
-  CRawImage();
+  CRawImage() = default;
 
   CRawImage(int width, int height, int bpp);
-
-  ~CRawImage();
 
   void updateImage(unsigned char* new_data, int width, int height, int bpp);
 
@@ -28,21 +24,13 @@ public:
   void drawStats(SMarker &marker, bool trans_2D);
 
   void drawGuideCalibration(int calib_num, float dim_x, float dim_y);
-
-
-
-  void plotLine(int x, int y);
-
-  void plotCenter();
-
-  double getOverallBrightness(bool upperHalf);
   
-  int width_;      // image width
-  int height_;     // image height
-  int size_;       // image size = width * height * bpp
-  int bpp_;        // image bits per pixel
+  int width_ = 0;
+  int height_ = 0;
+  int bpp_ = 0;
+  int size_ = 0;  // width * height * bpp
 
-  unsigned char* data_;  // image buffer
+  std::vector<unsigned char> data_;
 };
 
 }
