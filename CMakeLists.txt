@@ -24,7 +24,6 @@ find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(whycode_interfaces REQUIRED)
-#find_package(rcl_interfaces REQUIRED)
 
 find_package(OpenCV REQUIRED)
 
@@ -40,7 +39,6 @@ add_executable(whycode_node
     src/whycode/CWhycode.cpp
     src/whycode/CCircleDetect.cpp
     src/whycode/CRawImage.cpp
-    src/whycode/CTimer.cpp
     src/whycode/CTransformation.cpp
     src/whycode/CNecklace.cpp
     )

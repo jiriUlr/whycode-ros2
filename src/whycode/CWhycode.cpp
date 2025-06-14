@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <chrono>
 #include <stdio.h>
 
 #include "whycode/CWhycode.h"
@@ -307,11 +308,9 @@ void CWhycode::autoCalib()
 
 void CWhycode::processImage(CRawImage *image, std::vector<SMarker> &whycode_detections)
 {
-    // setup timers to assess system performance
-    CTimer timer;
+    auto start = std::chrono::steady_clock::now();
     num_found_ = num_static_ = 0;
-    timer.reset();
-    timer.start();
+
 
     // track the markers found in the last attempt
     for(int i = 0; i < num_markers_; i++)
@@ -349,7 +348,7 @@ void CWhycode::processImage(CRawImage *image, std::vector<SMarker> &whycode_dete
         }
     }
 
-    eval_time_ = timer.getTime();
+    eval_time_ = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count();
 
     for(int i = 0; i < num_markers_; i++)
     {

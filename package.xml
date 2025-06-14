@@ -23,7 +23,6 @@
   <depend>geometry_msgs</depend>
   <depend>image_transport</depend>
   <depend>whycode_interfaces</depend>
-  <!-- <depend>rcl_interfaces</depend> -->
 
   <depend>opencv</depend>
 

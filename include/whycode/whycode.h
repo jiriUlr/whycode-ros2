@@ -7,6 +7,5 @@
 #include "whycode/CTransformation.h"
 #include "whycode/CNecklace.h"
 #include "whycode/CRawImage.h"
-#include "whycode/CTimer.h"
 
 #endif  // WHYCODE__WHYCODE_H

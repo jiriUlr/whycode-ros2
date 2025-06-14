@@ -9,8 +9,7 @@
 #include <string>
 #include <cmath>
 
-// WhyCon/WhyCode libs
-#include "whycode/CTimer.h"
+// WhyCode libs
 #include "whycode/CCircleDetect.h"
 #include "whycode/CTransformation.h"
 #include "whycode/CNecklace.h"
