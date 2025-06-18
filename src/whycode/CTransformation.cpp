@@ -23,10 +23,6 @@ CTransformation::CTransformation(float circle_diam) :
 {
 }
 
-CTransformation::~CTransformation()
-{
-}
-
 void CTransformation::setTransformType(const ETransformType trans_type)
 {
     if(calibrated_ || trans_type == TRANSFORM_NONE)
@@ -49,7 +45,7 @@ void CTransformation::setCircleDiameter(const float circle_diam)
     circle_diameter_ = circle_diam;
 }
 
-void CTransformation::updateCameraParams(const std::vector<float> &intri, const std::vector<float> &dist)
+void CTransformation::updateCameraParams(const std::array<double, 9> &intri, const std::vector<double> &dist)
 {
     for(int i = 0; i < 5; i++)
         distortion_coeffs_.at<float>(i) = dist[i];

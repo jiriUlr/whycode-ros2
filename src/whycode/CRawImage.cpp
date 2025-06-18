@@ -13,10 +13,9 @@ CRawImage::CRawImage(int width, int height, int bpp) :
     width_(width),
     height_(height),
     bpp_(bpp),
-    size_(width * height * bpp),
-    data_(size_)
+    size_(width * height * bpp)
 {
-
+    data_ = (unsigned char *) std::malloc(size_ * sizeof(unsigned char));
 }
 
 void CRawImage::updateImage(unsigned char* new_data, int width, int height, int bpp)
@@ -27,15 +26,15 @@ void CRawImage::updateImage(unsigned char* new_data, int width, int height, int 
         height_ = height;
         bpp_ = bpp;
         size_ = width * height * bpp;
-        data_.resize(size_);
+        data_ = (unsigned char *) std::realloc(data_, size_ * sizeof(unsigned char));
         std::printf("Readjusting image format to %ix%i %ibpp.\n", width_, height_, bpp_);
     }
-    std::memcpy(data_.data(), new_data, size_);
+    std::memcpy(data_, new_data, size_);
 }
 
 void CRawImage::drawTimeStats(int eval_time, int num_markers)
 {
-    cv::Mat img(height_, width_, CV_8UC(bpp_), (void*)data_.data());
+    cv::Mat img(height_, width_, CV_8UC(bpp_), (void*)data_);
     char text[100];
     std::sprintf(text, "Found %i markers in %.3f ms", num_markers, eval_time / 1000.0);
 
@@ -53,7 +52,7 @@ void CRawImage::drawTimeStats(int eval_time, int num_markers)
 
 void CRawImage::drawStats(SMarker &marker, bool trans_2D)
 {
-    cv::Mat img(height_, width_, CV_8UC(bpp_), (void*)data_.data());
+    cv::Mat img(height_, width_, CV_8UC(bpp_), (void*)data_);
     char text[100];
 
     int font_face = cv::FONT_HERSHEY_SIMPLEX;//DUPLEX;
@@ -90,7 +89,7 @@ void CRawImage::drawStats(SMarker &marker, bool trans_2D)
 
 void CRawImage::drawGuideCalibration(int calib_num, float dim_x, float dim_y)
 {
-    cv::Mat img(height_, width_, CV_8UC(bpp_), (void*)data_.data());
+    cv::Mat img(height_, width_, CV_8UC(bpp_), (void*)data_);
     char text[100];
 
     int font_face = cv::FONT_HERSHEY_SIMPLEX;

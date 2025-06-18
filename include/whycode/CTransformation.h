@@ -11,9 +11,11 @@
 #define WHYCODE__CTRANSFORMATION_H
 
 #include <string>
+#include <vector>
+#include <array>
 #include <opencv2/opencv.hpp>
 
-#include "whycode/SStructDefs.h"
+#include "whycode/types.h"
 
 namespace whycode
 {
@@ -24,10 +26,8 @@ class CTransformation
         /* circle diameter of the pattern */
         CTransformation(float circle_diam);
 
-        ~CTransformation();
-
         /* update of intrinsic and distortion camera params */
-        void updateCameraParams(const std::vector<float> &intri, const std::vector<float> &dist);
+        void updateCameraParams(const std::array<double, 9> &intri, const std::vector<double> &dist);
 
         /* calculate marker 3D or 2D coordinates in user-defined coordinate system from the segment description provided by the CCircleDetector class, see 4.1-4.4 of [1] */
         SEllipseCenters calcSolutions(const SSegment segment);

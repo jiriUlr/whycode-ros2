@@ -306,7 +306,7 @@ void CWhycode::autoCalib()
     ++calib_step_;
 }
 
-void CWhycode::processImage(CRawImage *image, std::vector<SMarker> &whycode_detections)
+void CWhycode::processImage(CRawImage &image, std::vector<SMarker> &whycode_detections)
 {
     auto start = std::chrono::steady_clock::now();
     num_found_ = num_static_ = 0;
@@ -361,18 +361,18 @@ void CWhycode::processImage(CRawImage *image, std::vector<SMarker> &whycode_dete
     // draw stuff on the GUI
     if(use_gui_)
     {
-        image->drawTimeStats(eval_time_, num_found_);
+        image.drawTimeStats(eval_time_, num_found_);
 
         if(mancalibrate_)
         {
-            image->drawGuideCalibration(calib_num_, field_length_, field_width_);
+            image.drawGuideCalibration(calib_num_, field_length_, field_width_);
         }
 
         for(int i = 0; i < num_markers_ && draw_coords_; i++)
         {
             if(current_marker_array_[i].valid)
             {
-                image->drawStats(current_marker_array_[i], trans_->getTransformType() == TRANSFORM_2D);
+                image.drawStats(current_marker_array_[i], trans_->getTransformType() == TRANSFORM_2D);
             }
         }
     }
@@ -388,77 +388,81 @@ void CWhycode::processImage(CRawImage *image, std::vector<SMarker> &whycode_dete
     }
 }
 
+void CWhycode::setCalibrationConfig(const CalibrationConfig &config)
+{
+    trans_->setCalibrationConfig(config);
+}
+
+CalibrationConfig CWhycode::getCalibrationConfig()
+{
+    return trans_->getCalibrationConfig();
+}
+
 // cleaning up
 CWhycode::~CWhycode()
 {
     delete trans_;
     delete decoder_;
-    for(int i = 0; i < num_markers_; i++) delete detector_array_[i];
 }
 
-CWhycode::CWhycode() :
-    draw_coords_(true)
-    , draw_segments_(false)
-    , calibrated_coords_(false)
-{
-}
-
-void CWhycode::updateConfiguration(bool id, float diam, int markers, int size, double fl, double fw, double ict, double fct, double art, double cdtr, double cdta)
-{
-    field_length_ = fl;
-    field_width_ = fw;
-    identify_ = id;
-
-    trans_->setCircleDiameter(diam);
-
-    if(num_markers_ != markers)
-    {
-        current_marker_array_.resize(markers);
-        last_marker_array_.resize(markers);
-
-        if(num_markers_ < markers)
-        {
-            for(int i = num_markers_; i < markers; i++)
-                detector_array_.push_back(new CCircleDetect(identify_, id_bits_, id_samples_, draw_segments_, trans_, decoder_));
-        }
-        else
-        {
-            for(int i = num_markers_; i > markers; i--) delete detector_array_[i];
-            detector_array_.resize(markers);
-        }
-    }
-
-    num_markers_ = markers;
-
-    for(int i = 0; i < num_markers_; i++) detector_array_[i]->reconfigure(ict, fct, art, cdtr, cdta, id, size);
-}
-
-void CWhycode::updateCameraInfo(std::vector<float> &intrinsic_mat, std::vector<float> &distortion_coeffs)
+void CWhycode::updateCameraInfo(const std::array<double, 9> &intrinsic_mat, const std::vector<double> &distortion_coeffs)
 {
     trans_->updateCameraParams(intrinsic_mat, distortion_coeffs);
 }
 
-void CWhycode::init(float circle_diam, bool use_gui, int id_b, int id_s, int ham_dist, int markers)
+void CWhycode::init(float circle_diam, int id_b, int id_s, int ham_dist)
 {
-    circle_diameter_ = circle_diam;
-    use_gui_ = use_gui;
     id_bits_ = id_b;
     id_samples_ = id_s;
     hamming_dist_ = ham_dist;
-    num_markers_ = markers;
+    trans_ = new CTransformation(circle_diam);
+    decoder_ = new CNecklace(id_bits_, id_samples_, hamming_dist_);
+}
+
+void CWhycode::set_parameters(Parameters &params)
+{
+    params_ = params;
+
+    trans_->setCircleDiameter(params_.circle_diameter);
+    field_length_ = params_.field_length;
+    field_width_ = params_.field_width;
+    identify_ = params_.identify;
+    num_markers_ = params_.num_markers;
+    use_gui_ = params_.use_gui;
+    id_bits_ = params_.id_bits;
+    id_samples_ = params_.id_samples;
+    hamming_dist_ = params_.hamming_dist;
+
+    if(detector_array_.size() != num_markers_)
+    {
+        current_marker_array_.resize(num_markers_);
+        last_marker_array_.resize(num_markers_);
+
+        if(detector_array_.size() < num_markers_)
+        {
+            for(int i = 0; i < num_markers_ - detector_array_.size(); i++)
+            {
+                detector_array_.emplace_back(std::make_unique<CCircleDetect>(identify_, id_bits_, id_samples_, draw_segments_, trans_, decoder_));
+            }
+        }
+        else
+        {
+            detector_array_.resize(num_markers_);
+        }
+    }
 
     calib_tmp_.resize(calibration_steps_);
-    current_marker_array_.resize(num_markers_);
-    last_marker_array_.resize(num_markers_);
 
-    trans_ = new CTransformation(circle_diameter_);
-    decoder_ = new CNecklace(id_bits_, id_samples_, hamming_dist_);
+    for(auto & detector : detector_array_)
+    {
+        detector->reconfigure(params_.initial_circularity_tolerance, params_.final_circularity_tolerance, params_.area_ratio_tolerance,
+                              params_.center_distance_tolerance_ratio, params_.center_distance_tolerance_abs, identify_, params_.min_size);
+    }
+}
 
-    // initialize the circle detectors - each circle has its own detector instance
-    detector_array_.resize(num_markers_);
-    for(int i = 0; i < num_markers_; i++)
-        detector_array_[i] = new CCircleDetect(identify_, id_bits_, id_samples_, draw_segments_, trans_, decoder_);
-
+Parameters CWhycode::get_parameters()
+{
+    return params_;
 }
 
 }

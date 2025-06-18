@@ -87,7 +87,7 @@ bool CCircleDetect::changeThreshold()
     return t_step > 16;
 }
 
-bool CCircleDetect::examineSegment(CRawImage *image, SSegment *segmen, int ii, float areaRatio)
+bool CCircleDetect::examineSegment(CRawImage &image, SSegment *segmen, int ii, float areaRatio)
 {
     int vx, vy;
     queueOldStart = queueStart;
@@ -115,7 +115,7 @@ bool CCircleDetect::examineSegment(CRawImage *image, SSegment *segmen, int ii, f
         pos = position + 1;
         if (buffer.get()[pos] == 0)
         {
-            ptr = &image->data_[pos * step];
+            ptr = &image.data_[pos * step];
             buffer.get()[pos] = (ptr[0] > threshold) - 2;
         }
         if (buffer.get()[pos] == type)
@@ -127,7 +127,7 @@ bool CCircleDetect::examineSegment(CRawImage *image, SSegment *segmen, int ii, f
         pos = position - 1;
         if (buffer.get()[pos] == 0)
         {
-            ptr = &image->data_[pos * step];
+            ptr = &image.data_[pos * step];
             buffer.get()[pos] = (ptr[0] > threshold) - 2;
         }
         if (buffer.get()[pos] == type)
@@ -139,7 +139,7 @@ bool CCircleDetect::examineSegment(CRawImage *image, SSegment *segmen, int ii, f
         pos = position - width;
         if (buffer.get()[pos] == 0)
         {
-            ptr = &image->data_[pos * step];
+            ptr = &image.data_[pos * step];
             buffer.get()[pos] = (ptr[0] > threshold) - 2;
         }
         if (buffer.get()[pos] == type)
@@ -151,7 +151,7 @@ bool CCircleDetect::examineSegment(CRawImage *image, SSegment *segmen, int ii, f
         pos = position + width;
         if (buffer.get()[pos] == 0)
         {
-            ptr = &image->data_[pos * step];
+            ptr = &image.data_[pos * step];
             buffer.get()[pos] = (ptr[0] > threshold) - 2;
         }
         if (buffer.get()[pos] == type)
@@ -186,7 +186,7 @@ bool CCircleDetect::examineSegment(CRawImage *image, SSegment *segmen, int ii, f
             for (int p = queueOldStart; p < queueEnd; p++)
             {
                 pos = queue.get()[p];
-                segmen->mean += image->data_[pos * step];
+                segmen->mean += image.data_[pos * step];
             }
             segmen->mean = segmen->mean / segmen->size;
             result = true;
@@ -263,7 +263,7 @@ SSegment CCircleDetect::calcSegment(SSegment segment, int size, long int x, long
     return result;
 }
 
-SMarker CCircleDetect::findSegment(CRawImage* image, SSegment init)
+SMarker CCircleDetect::findSegment(CRawImage &image, SSegment init)
 {
     numSegments = 0;
     int pos = 0;
@@ -271,24 +271,24 @@ SMarker CCircleDetect::findSegment(CRawImage* image, SSegment init)
     int start = 0;
     bool cont = true;
 
-    if (image->width_ != width || image->height_ != height)
+    if (image.width_ != width || image.height_ != height)
     {
-        adjustDimensions(image->width_, image->height_);
+        adjustDimensions(image.width_, image.height_);
         init.valid = false;
     }
-    step = image->bpp_;
+    step = image.bpp_;
 
     //bufferCleanup(init);
     if (init.valid && track)
     {
-        ii = ((int)init.y) * image->width_ + init.x;
+        ii = ((int)init.y) * image.width_ + init.x;
         start = ii;
     }
     while (cont) 
     {
         if (buffer.get()[ii] == 0)
         {
-            ptr = &image->data_[ii * step];
+            ptr = &image.data_[ii * step];
             if (ptr[0] < threshold) buffer.get()[ii] = -2;
         }
         if (buffer.get()[ii] == -2)
@@ -299,10 +299,10 @@ SMarker CCircleDetect::findSegment(CRawImage* image, SSegment init)
             //if the segment looks like a ring, we check its inside area
             if (examineSegment(image, &outer, ii, outerAreaRatio))
             {
-                pos = outer.y * image->width_ + outer.x;
+                pos = outer.y * image.width_ + outer.x;
                 if (buffer.get()[pos] == 0)
                 {
-                    ptr = &image->data_[pos * step];
+                    ptr = &image.data_[pos * step];
                     buffer.get()[pos]= (ptr[0] >= threshold) - 2;
                 }   
                 if (buffer.get()[pos] == -1)
@@ -326,8 +326,8 @@ SMarker CCircleDetect::findSegment(CRawImage* image, SSegment init)
                                 for (int p = queueOldStart; p < queueEnd; p++)
                                 {
                                     pos = queue.get()[p];
-                                    tx = pos % image->width_;
-                                    ty = pos / image->width_;
+                                    tx = pos % image.width_;
+                                    ty = pos / image.width_;
                                     six += tx;
                                     siy += ty;
                                     cm0 += tx * tx; 
@@ -341,8 +341,8 @@ SMarker CCircleDetect::findSegment(CRawImage* image, SSegment init)
                                 for (int p = 0; p < queueOldStart; p++)
                                 {
                                     pos = queue.get()[p];
-                                    tx = pos % image->width_;
-                                    ty = pos / image->width_;
+                                    tx = pos % image.width_;
+                                    ty = pos / image.width_;
                                     six += tx;
                                     siy += ty;
                                     cm0 += tx * tx; 
@@ -522,9 +522,9 @@ SMarker CCircleDetect::findSegment(CRawImage* image, SSegment init)
         for (int p = queueOldStart; p < queueEnd; p++)
         {
             pos = queue.get()[p];
-            image->data_[step * pos + 0] = 0;
-            image->data_[step * pos + 1] = 0;
-            image->data_[step * pos + 2] = 0;
+            image.data_[step * pos + 0] = 0;
+            image.data_[step * pos + 1] = 0;
+            image.data_[step * pos + 2] = 0;
         }
     }
 
@@ -535,26 +535,26 @@ SMarker CCircleDetect::findSegment(CRawImage* image, SSegment init)
             for (int p = 0; p < queueOldStart; p++)
             {
                 pos = queue.get()[p];
-                image->data_[step * pos + 0] = 255;
-                image->data_[step * pos + 1] = 255;
-                image->data_[step * pos + 2] = 200;
+                image.data_[step * pos + 0] = 255;
+                image.data_[step * pos + 1] = 255;
+                image.data_[step * pos + 2] = 200;
             }
             if(debug)
             {
-                pos = ((int)outer.x + ((int)outer.y) * image->width_);
-                if (pos > 0 && pos < image->width_ * image->height_)
+                pos = ((int)outer.x + ((int)outer.y) * image.width_);
+                if (pos > 0 && pos < image.width_ * image.height_)
                 {
-                    image->data_[step * pos + 0] = 255;
-                    image->data_[step * pos + 1] = 0;
-                    image->data_[step * pos + 2] = 0;
+                    image.data_[step * pos + 0] = 255;
+                    image.data_[step * pos + 1] = 0;
+                    image.data_[step * pos + 2] = 0;
                 }
 
-                pos = ((int)inner.x + ((int)inner.y) * image->width_);
-                if (pos > 0 && pos < image->width_ * image->height_)
+                pos = ((int)inner.x + ((int)inner.y) * image.width_);
+                if (pos > 0 && pos < image.width_ * image.height_)
                 {
-                    image->data_[step * pos + 0] = 0;
-                    image->data_[step * pos + 1] = 255;
-                    image->data_[step * pos + 2] = 0;
+                    image.data_[step * pos + 0] = 0;
+                    image.data_[step * pos + 1] = 255;
+                    image.data_[step * pos + 2] = 0;
                 }
             }
         }
@@ -570,7 +570,7 @@ SMarker CCircleDetect::findSegment(CRawImage* image, SSegment init)
     return output;
 }
 
-bool CCircleDetect::ambiguityAndObtainCode(CRawImage *image)
+bool CCircleDetect::ambiguityAndObtainCode(CRawImage &image)
 {
     int segIdx = 0;
 
@@ -615,7 +615,7 @@ bool CCircleDetect::ambiguityAndObtainCode(CRawImage *image)
         {
             x[i][a] = tmp[i].x+(tmp[i].m0*cos((float)a/idSamples*2*M_PI)*tmp[i].v0+tmp[i].m1*sin((float)a/idSamples*2*M_PI)*tmp[i].v1)*2.0;
             y[i][a] = tmp[i].y+(tmp[i].m0*cos((float)a/idSamples*2*M_PI)*tmp[i].v1-tmp[i].m1*sin((float)a/idSamples*2*M_PI)*tmp[i].v0)*2.0;
-            if(x[i][a] < 0 || image->width_ <= x[i][a] || y[i][a] < 0 || image->height_ <= y[i][a])
+            if(x[i][a] < 0 || image.width_ <= x[i][a] || y[i][a] < 0 || image.height_ <= y[i][a])
             {
                 return false;
             }
@@ -624,19 +624,19 @@ bool CCircleDetect::ambiguityAndObtainCode(CRawImage *image)
         //retrieve the image brightness on these using bilinear transformation
         float gx, gy;
         int px, py;
-        unsigned char* ptr = image->data_.data();
+        unsigned char* ptr = image.data_;
         for (int a = 0; a < idSamples; a++)
         {
             px = x[i][a];
             py = y[i][a];
             gx = x[i][a]-px;
             gy = y[i][a]-py;
-            pos = (px+py*image->width_);
+            pos = (px+py*image.width_);
 
             /*detection from the image*/
-            signal[i][a]  = ptr[(pos+0)*step+0]*(1-gx)*(1-gy)+ptr[(pos+1)*step+0]*gx*(1-gy)+ptr[(pos+image->width_)*step+0]*(1-gx)*gy+ptr[step*(pos+image->width_+1)+0]*gx*gy;
-            signal[i][a] += ptr[(pos+0)*step+1]*(1-gx)*(1-gy)+ptr[(pos+1)*step+1]*gx*(1-gy)+ptr[(pos+image->width_)*step+1]*(1-gx)*gy+ptr[step*(pos+image->width_+1)+1]*gx*gy;
-            signal[i][a] += ptr[(pos+0)*step+2]*(1-gx)*(1-gy)+ptr[(pos+1)*step+2]*gx*(1-gy)+ptr[(pos+image->width_)*step+2]*(1-gx)*gy+ptr[step*(pos+image->width_+1)+2]*gx*gy;
+            signal[i][a]  = ptr[(pos+0)*step+0]*(1-gx)*(1-gy)+ptr[(pos+1)*step+0]*gx*(1-gy)+ptr[(pos+image.width_)*step+0]*(1-gx)*gy+ptr[step*(pos+image.width_+1)+0]*gx*gy;
+            signal[i][a] += ptr[(pos+0)*step+1]*(1-gx)*(1-gy)+ptr[(pos+1)*step+1]*gx*(1-gy)+ptr[(pos+image.width_)*step+1]*(1-gx)*gy+ptr[step*(pos+image.width_+1)+1]*gx*gy;
+            signal[i][a] += ptr[(pos+0)*step+2]*(1-gx)*(1-gy)+ptr[(pos+1)*step+2]*gx*(1-gy)+ptr[(pos+image.width_)*step+2]*(1-gx)*gy+ptr[step*(pos+image.width_+1)+2]*gx*gy;
         }
 
         //binarize the signal
@@ -742,18 +742,18 @@ bool CCircleDetect::ambiguityAndObtainCode(CRawImage *image)
 
     for (int a = 0; a < idSamples; a++)
     {
-        pos = ((int)x[segIdx][a] + ((int)y[segIdx][a]) * image->width_);
-        if (pos > 0 && pos < image->width_ * image->height_)
+        pos = ((int)x[segIdx][a] + ((int)y[segIdx][a]) * image.width_);
+        if (pos > 0 && pos < image.width_ * image.height_)
         {
-            if(image->bpp_ == 3)
+            if(image.bpp_ == 3)
             {
-                image->data_[step * pos + 0] = 0;
-                image->data_[step * pos + 1] = (unsigned char)(255.0 * a / idSamples);
-                image->data_[step * pos + 2] = 0;
+                image.data_[step * pos + 0] = 0;
+                image.data_[step * pos + 1] = (unsigned char)(255.0 * a / idSamples);
+                image.data_[step * pos + 2] = 0;
             }
-            else if(image->bpp_ == 1)
+            else if(image.bpp_ == 1)
             {
-                image->data_[step * pos] = (unsigned char)(255.0 * a / idSamples);
+                image.data_[step * pos] = (unsigned char)(255.0 * a / idSamples);
             }
         }
     }

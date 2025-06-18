@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
-#include "whycode/SStructDefs.h"
+#include "whycode/types.h"
 
 namespace whycode
 {

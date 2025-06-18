@@ -1,9 +1,7 @@
 #ifndef WHYCODE__CRAWIMAGE_H
 #define WHYCODE__CRAWIMAGE_H
 
-#include <vector>
-
-#include "whycode/SStructDefs.h"
+#include "whycode/types.h"
 
 namespace whycode
 {
@@ -30,7 +28,7 @@ public:
   int bpp_ = 0;
   int size_ = 0;  // width * height * bpp
 
-  std::vector<unsigned char> data_;
+  unsigned char * data_ = nullptr;
 };
 
 }

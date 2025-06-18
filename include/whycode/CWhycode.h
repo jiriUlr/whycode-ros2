@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string>
 #include <cmath>
+#include <memory>
 
 // WhyCode libs
 #include "whycode/CCircleDetect.h"
@@ -28,7 +29,7 @@ class CWhycode {
 
         // marker detection variables
         bool identify_ = false;     // whether to identify ID
-        int num_markers_;           // num of markers to track
+        int num_markers_ = 0;           // num of markers to track
         int num_found_ = 0;         // num of markers detected in the last step
         int num_static_ = 0;        // num of non-moving markers
 
@@ -37,52 +38,56 @@ class CWhycode {
         int id_samples_;    // num of samples to identify ID
         int hamming_dist_;  // hamming distance of ID code
 
-        CWhycode();
         ~CWhycode();
         
-        void init(float circle_diam, bool use_gui, int id_b, int id_s, int ham_dist, int markers);
+        void init(float circle_diam, int id_b, int id_s, int ham_dist);
+
         void setDrawing(bool draw_coords, bool draw_segments);
+
         void setCoordinates(ETransformType type);
+
         void autocalibration();
+
         void manualcalibration();
+
         void selectMarker(float x, float y);
-        void updateConfiguration(bool id, float diam, int markers, int size, double fl, double fw, double ict, double fct, double art, double cdtr, double cdta);
-        void updateCameraInfo(std::vector<float> &intrinsic_mat, std::vector<float> &distortion_coeffs);
-        void processImage(CRawImage *image, std::vector<SMarker> &whycode_detections);
+
+        void updateCameraInfo(const std::array<double, 9> &intrinsic_mat, const std::vector<double> &distortion_coeffs);
+
+        void processImage(CRawImage &image, std::vector<SMarker> &whycode_detections);
+
         bool getDrawCoords();
+
         bool getDrawSegments();
+
         int getCoordinates();
 
+        void set_parameters(Parameters &params);
 
+        Parameters get_parameters();
 
-        void setCalibrationConfig(const CalibrationConfig &config)
-        {
-            trans_->setCalibrationConfig(config);
-        }
+        void setCalibrationConfig(const CalibrationConfig &config);
 
-        CalibrationConfig getCalibrationConfig()
-        {
-            return trans_->getCalibrationConfig();
-        }
-
-
+        CalibrationConfig getCalibrationConfig();
 
     private:
 
+        Parameters params_;
+
         // GUI-related stuff
         bool use_gui_;          // whether use graphic interface
-        bool draw_coords_;      // draw coordinates at the marker's positions
-        bool draw_segments_;    // draw segmentation outcome
+        bool draw_coords_ = true;      // draw coordinates at the marker's positions
+        bool draw_segments_ = false;    // draw segmentation outcome
         int eval_time_;         // time required to detect the patterns
 
         CTransformation *trans_;    // transformation instance
         CNecklace *decoder_;        // instance to decode marker's ID
 
-        std::deque<SMarker> current_marker_array_;      // array of currently detected markers
-        std::deque<SMarker> last_marker_array_;         // array of previously detected markers
-        std::deque<CCircleDetect*> detector_array_;     // array of detector instances for each marker
+        std::vector<SMarker> current_marker_array_;      // array of currently detected markers
+        std::vector<SMarker> last_marker_array_;         // array of previously detected markers
+        std::vector<std::unique_ptr<CCircleDetect>> detector_array_;     // array of detector instances for each marker
 
-        bool calibrated_coords_;
+        bool calibrated_coords_ = false;
 
 
         std::array<std::map<int, int>, 4> indices_autocalib;

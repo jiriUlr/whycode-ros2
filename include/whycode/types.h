@@ -4,16 +4,38 @@
 namespace whycode
 {
 
-typedef struct
+struct Parameters
+{
+    // static params
+    bool use_gui;
+    int id_bits;
+    int id_samples;
+    int hamming_dist;
+    int coords_method;
+
+    // dynamic params
+    bool identify = true;
+    int num_markers = 1;
+    int min_size = 100;
+    double circle_diameter = 0.122;
+    double field_length = 1.0;
+    double field_width = 1.0;
+    double initial_circularity_tolerance = 100.0;
+    double final_circularity_tolerance = 2.0;
+    double area_ratio_tolerance = 40.0;
+    double center_distance_tolerance_ratio = 10.0;
+    double center_distance_tolerance_abs = 5.0;
+};
+
+struct SDecoded
 {
     float angle;    // axis rotation angle
     int id;         // marker decoded ID
     int edgeIndex;  // idx of starting edge
-} SDecoded;
-
+};
 
 // this structure contains information related to image coordinates and dimensions of the detected pattern
-typedef struct
+struct SSegment
 {
     float x;                    // center in image coordinates
     float y;                    // center in image coordinates
@@ -30,7 +52,7 @@ typedef struct
     float v0, v1;               // eigenvectors of the pattern's covariance matrix, see Section 3.3 of [1]
     float r0, r1;               // ratio of inner vs outer ellipse dimensions (used to establish ID, see the SwarmCon version of this class)
     int ID;                     // pattern ID
-} SSegment;
+};
 
 // which transform to use
 typedef enum
@@ -43,7 +65,7 @@ typedef enum
     TRANSFORM_NUMBER
 } ETransformType;
 
-typedef struct
+struct STrackedObject
 {
     float u, v;                 // real center in the image coords
     float x, y, z, d;           // position and distance in the camera coords
@@ -54,29 +76,29 @@ typedef struct
     // ??? not used float roundness;            // segment roundness as calculated by 5 of [1]
     // ??? not used float bwratio;              // black/white area ratio
     // ??? not used int ID;                     // ID of marker
-} STrackedObject;
+};
 
-typedef struct
+struct SEllipseCenters
 {
     float u[2];     // retransformed x coords
     float v[2];     // retransformed y coords
     float n[2][3];  // both solutions of marker's surface normal
     float t[2][3];  // both solutions of position vector
-} SEllipseCenters;
+};
 
 // rotation/translation model of the 3D transformation                                                                                                                  
-typedef struct
+struct S3DTransform
 {
     float orig[3];      // translation {x, y, z}
     float simlar[9];    // rotation description, similarity transformation matrix
-} S3DTransform;
+};
 
-typedef struct
+struct SMarker
 {
     bool valid;
     SSegment seg;
     STrackedObject obj;
-} SMarker;
+};
 
 
 

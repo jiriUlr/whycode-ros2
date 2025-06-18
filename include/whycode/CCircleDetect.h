@@ -6,11 +6,8 @@
 #include "whycode/CRawImage.h"
 #include "whycode/CTransformation.h"
 #include "whycode/CNecklace.h"
-#include "whycode/SStructDefs.h"
+#include "whycode/types.h"
 
-/*TODO note #07*/
-#define COLOR_PRECISION 32
-#define COLOR_STEP 8
 #define INNER 0
 #define OUTER 1
 
@@ -36,7 +33,7 @@ class CCircleDetect {
         void reconfigure(float ict,float fct,float art,float cdtr,float cdta, bool id, int minS);
 
         //main detection method, implements Algorithm 2 of [1] 
-        SMarker findSegment(CRawImage* image, SSegment init);
+        SMarker findSegment(CRawImage &image, SSegment init);
 
         void setDraw(bool draw);
 
@@ -48,7 +45,7 @@ class CCircleDetect {
     private:
 
         //local pattern search - implements Algorithm 1 of [1]
-        bool examineSegment(CRawImage* image,SSegment *segmen,int ii,float areaRatio);
+        bool examineSegment(CRawImage &image, SSegment *segmen, int ii, float areaRatio);
 
         //calculate the pattern dimensions by means of eigenvalue decomposition, see 3.3 of [1]
         SSegment calcSegment(SSegment segment,int size,long int x,long int y,long int cm0,long int cm1,long int cm2);
@@ -65,7 +62,7 @@ class CCircleDetect {
         // adjust the dimensions of the image, when the image size changes
         void adjustDimensions(int wi, int he);
 
-        bool ambiguityAndObtainCode(CRawImage *image);
+        bool ambiguityAndObtainCode(CRawImage &image);
         void ambiguityPlain();
 
         CTransformation *trans_;
