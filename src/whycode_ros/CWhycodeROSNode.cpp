@@ -11,39 +11,6 @@ using std::placeholders::_2;
 namespace whycode_ros2
 {
 
-void CWhycodeROSNode::getGuiSettingsCallback(const std::shared_ptr<whycode_interfaces::srv::GetGuiSettings::Request> req,
-                                                  std::shared_ptr<whycode_interfaces::srv::GetGuiSettings::Response> res)
-{
-    RCLCPP_INFO(this->get_logger(), "getGuiSettingsCallback");
-    res->draw_coords = whycode_->getDrawCoords();
-    res->draw_segments = whycode_->getDrawSegments();
-    res->coords = whycode_->getCoordinates();
-}
-
-void CWhycodeROSNode::setDrawingCallback(const std::shared_ptr<whycode_interfaces::srv::SetDrawing::Request> req,
-                                              std::shared_ptr<whycode_interfaces::srv::SetDrawing::Response> res)
-{
-    RCLCPP_INFO(this->get_logger(), "setDrawingCallback coords %d segs %d", req->draw_coords, req->draw_segments);
-    whycode_->setDrawing(req->draw_coords, req->draw_segments);
-    res->success = true;
-}
-
-void CWhycodeROSNode::setCoordsCallback(const std::shared_ptr<whycode_interfaces::srv::SetCoords::Request> req,
-                                             std::shared_ptr<whycode_interfaces::srv::SetCoords::Response> res)
-{
-    RCLCPP_INFO(this->get_logger(), "setCoordsCallback %d", req->coords);
-    try
-    {
-        whycode_->setCoordinates(static_cast<whycode::ETransformType>(req->coords));
-        res->success = true;
-    }
-    catch(const std::exception& e)
-    {
-        res->success = false;
-        res->msg = e.what();
-    }
-}
-
 void CWhycodeROSNode::setCalibMethodCallback(const std::shared_ptr<whycode_interfaces::srv::SetCalibMethod::Request> req,
                                                   std::shared_ptr<whycode_interfaces::srv::SetCalibMethod::Response> res)
 {
@@ -109,31 +76,6 @@ void CWhycodeROSNode::selectMarkerCallback(const std::shared_ptr<whycode_interfa
     whycode_->selectMarker(req->point.x, req->point.y);
 }
 
-/* void CWhycodeROSNode::reconfigureCallback(whycon::whyconConfig& config, uint32_t level)
-{
-    ROS_INFO("[Reconfigure Request]\n"
-        "identify %s circle_diameter %lf num_markers %d\n"
-        "min_size %d field_length %lf field_width %lf\n"
-        "initial_circularity_tolerance %lf final_circularity_tolerance %lf\n"
-        "area_ratio_tolerance %lf\n"
-        "center_distance_tolerance_ratio %lf center_distance_tolerance_abs %lf\n",
-        (config.identify) ? "True" : "False",
-        config.circle_diameter, config.num_markers, config.min_size, config.field_length,
-        config.field_width, config.initial_circularity_tolerance,
-        config.final_circularity_tolerance, config.area_ratio_tolerance,
-        config.center_distance_tolerance_ratio, config.center_distance_tolerance_abs
-        );
-
-    whycon_.updateConfiguration(
-        config.identify, config.circle_diameter, config.num_markers, config.min_size,
-        config.field_length, config.field_width, config.initial_circularity_tolerance,
-        config.final_circularity_tolerance, config.area_ratio_tolerance,
-        config.center_distance_tolerance_ratio, config.center_distance_tolerance_abs
-        );
-
-    identify_ = config.identify;
-} */
-
 void CWhycodeROSNode::cameraInfoCallback(const sensor_msgs::msg::CameraInfo::SharedPtr msg)
 {
     if(msg->k[0] == 0)
@@ -183,7 +125,7 @@ void CWhycodeROSNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPt
         markers_pub_->publish(marker_array);
     }
 
-    if(img_pub_.getNumSubscribers() > 0)
+    if(why_params_.use_gui && img_pub_.getNumSubscribers() > 0)
     {
         sensor_msgs::msg::Image out_msg;
         out_msg.header = msg->header;
@@ -223,9 +165,6 @@ CWhycodeROSNode::CWhycodeROSNode() :
     img_pub_ = image_transport::create_publisher(this, "~/processed_image");
     markers_pub_ = this->create_publisher<whycode_interfaces::msg::MarkerArray>("~/markers", 1);
 
-    gui_settings_srv_ = this->create_service<whycode_interfaces::srv::GetGuiSettings>("~/get_gui_settings", std::bind(&CWhycodeROSNode::getGuiSettingsCallback, this, _1, _2));
-    drawing_srv_ = this->create_service<whycode_interfaces::srv::SetDrawing>("~/set_drawing", std::bind(&CWhycodeROSNode::setDrawingCallback, this, _1, _2));
-    coord_system_srv_ = this->create_service<whycode_interfaces::srv::SetCoords>("~/set_coords", std::bind(&CWhycodeROSNode::setCoordsCallback, this, _1, _2));
     calib_method_srv_ = this->create_service<whycode_interfaces::srv::SetCalibMethod>("~/set_calib_method", std::bind(&CWhycodeROSNode::setCalibMethodCallback, this, _1, _2));
     calib_path_srv_ = this->create_service<whycode_interfaces::srv::SetCalibPath>("~/set_calib_path", std::bind(&CWhycodeROSNode::setCalibPathCallback, this, _1, _2));
     select_marker_srv_ = this->create_service<whycode_interfaces::srv::SelectMarker>("~/select_marker", std::bind(&CWhycodeROSNode::selectMarkerCallback, this, _1, _2));
@@ -250,14 +189,16 @@ void CWhycodeROSNode::process_node_parameters()
 void CWhycodeROSNode::process_lib_parameters()
 {
     // static lib parameters
-    why_params_.use_gui = this->declare_parameter("use_gui", true);
     why_params_.id_bits = this->declare_parameter("id_bits", 6);
     why_params_.id_samples = this->declare_parameter("id_samples", 360);
     why_params_.hamming_dist = this->declare_parameter("hamming_dist", 1);
-    why_params_.coords_method = this->declare_parameter("coords_method", 0);
 
     // dynamic lib parameters
+    why_params_.draw_coords = this->declare_parameter("draw_coords", true);
+    why_params_.draw_segments = this->declare_parameter("draw_segments", true);
+    why_params_.use_gui = this->declare_parameter("use_gui", true);
     why_params_.identify = this->declare_parameter("identify", true);
+    why_params_.coords_method = this->declare_parameter("coords_method", 0);
     why_params_.num_markers = this->declare_parameter("num_markers", 1);
     why_params_.min_size = this->declare_parameter("min_size", 100);
     why_params_.circle_diameter = this->declare_parameter("circle_diameter", 0.122);
@@ -274,14 +215,19 @@ rcl_interfaces::msg::SetParametersResult CWhycodeROSNode::validate_upcoming_para
 {
     rcl_interfaces::msg::SetParametersResult result;
     result.successful = true;
-    // for(const auto & parameter : parameters)
-    // {
-    //     if(!some_condition)
-    //     {
-    //         result.successful = false;
-    //         result.reason = "the reason it could not be allowed";
-    //     }
-    // }
+    
+    for(const auto & parameter : parameters)
+    {
+        if(param.get_name() == "coords_method")
+        {
+            if(param.as_int() != 0 && !whycode_.is_calibrated())
+            {
+                result.successful = false;
+                result.reason = "The coordinates calibration is not available. Load or perform calibration.";
+            }
+        }
+    }
+
     return result;
 }
 
@@ -335,6 +281,18 @@ void CWhycodeROSNode::react_to_updated_parameters_callback(const std::vector<rcl
         {
             why_params.center_distance_tolerance_abs = param.as_double();
         }
+        else if(param.get_name() == "draw_coords")
+        {
+            why_params.draw_coords = param.as_bool();
+        }
+        else if(param.get_name() == "draw_segments")
+        {
+            why_params.draw_segments = param.as_bool();
+        }
+        else if(param.get_name() == "coords_method")
+        {
+            why_params.coords_method = param.as_int();
+        }
     }
 
     whycode_->set_parameters(why_params);
@@ -344,45 +302,38 @@ void CWhycodeROSNode::loadCalibration(const std::string &str)
 {
     whycode::CalibrationConfig config;
 
-    try
-    {
-        cv::FileStorage fs(str, cv::FileStorage::READ);
-        if(!fs.isOpened())
-            throw std::runtime_error("Could not open/load calibration file. " + str);
+    cv::FileStorage fs(str, cv::FileStorage::READ);
+    if(!fs.isOpened())
+        throw std::runtime_error("Could not open/load calibration file. " + str);
 
-        fs["dim_x"] >> config.grid_dim_x_;
-        fs["dim_y"] >> config.grid_dim_y_;
+    fs["dim_x"] >> config.grid_dim_x_;
+    fs["dim_y"] >> config.grid_dim_y_;
 
-        cv::Mat hom_tmp(3, 3, CV_32FC1);
-        fs["hom"] >> hom_tmp;
-        for(int i = 0; i < 3; i++)
-        {
-            for(int j = 0; j < 3; j++)
-                config.hom_[3 * i + j] = hom_tmp.at<float>(i, j);
+    cv::Mat hom_tmp(3, 3, CV_32FC1);
+    fs["hom"] >> hom_tmp;
+    for(int i = 0; i < 3; i++){
+        for(int j = 0; j < 3; j++){
+            config.hom_[3 * i + j] = hom_tmp.at<float>(i, j);
+        }
+    }
+
+    for(int k = 0; k < 4; k++){
+        cv::Mat offset_tmp(3, 1, CV_32FC1);
+        fs["offset_" + std::to_string(k)] >> offset_tmp;
+        for(int i = 0; i < 3; i++){
+            config.D3transform_[k].orig[i] = offset_tmp.at<float>(i);
         }
 
-        for(int k = 0; k < 4; k++)
-        {
-            cv::Mat offset_tmp(3, 1, CV_32FC1);
-            fs["offset_" + std::to_string(k)] >> offset_tmp;
-            for(int i = 0; i < 3; i++)
-                config.D3transform_[k].orig[i] = offset_tmp.at<float>(i);
-
-            cv::Mat simlar_tmp(3, 3, CV_32FC1);
-            fs["simlar_" + std::to_string(k)] >> simlar_tmp;
-            for(int i = 0; i < 3; i++)
-            {
-                for(int j = 0; j < 3; j++)
-                    config.D3transform_[k].simlar[3 * i + j] = simlar_tmp.at<float>(i, j);
+        cv::Mat simlar_tmp(3, 3, CV_32FC1);
+        fs["simlar_" + std::to_string(k)] >> simlar_tmp;
+        for(int i = 0; i < 3; i++){
+            for(int j = 0; j < 3; j++){
+                config.D3transform_[k].simlar[3 * i + j] = simlar_tmp.at<float>(i, j);
             }
         }
+    }
 
-        fs.release();
-    }
-    catch(const std::exception& e)
-    {
-        throw;
-    }
+    fs.release();
 
     whycode_->setCalibrationConfig(config);
 }
@@ -391,32 +342,25 @@ void CWhycodeROSNode::saveCalibration(const std::string &str)
 {
     whycode::CalibrationConfig config = whycode_->getCalibrationConfig();
 
-    try
+    cv::FileStorage fs(str, cv::FileStorage::WRITE);
+    if(!fs.isOpened())
+        throw std::runtime_error("Could not open/create calibration file. " + str);
+
+    fs.writeComment("Dimensions");
+    fs << "dim_x" << config.grid_dim_x_;
+    fs << "dim_y" << config.grid_dim_y_;
+    fs.writeComment("2D calibration");
+    fs << "hom" << cv::Mat(3, 3, CV_32FC1, config.hom_);
+    fs.writeComment("3D calibration");
+
+    for (int k = 0; k < 4; k++)
     {
-        cv::FileStorage fs(str, cv::FileStorage::WRITE);
-        if(!fs.isOpened())
-            throw std::runtime_error("Could not open/create calibration file. " + str);
-
-        fs.writeComment("Dimensions");
-        fs << "dim_x" << config.grid_dim_x_;
-        fs << "dim_y" << config.grid_dim_y_;
-        fs.writeComment("2D calibration");
-        fs << "hom" << cv::Mat(3, 3, CV_32FC1, config.hom_);
-        fs.writeComment("3D calibration");
-
-        for (int k = 0; k < 4; k++)
-        {
-            fs.writeComment("D3transform " + std::to_string(k));
-            fs << "offset_" + std::to_string(k) << cv::Mat(3, 1, CV_32FC1, config.D3transform_[k].orig);
-            fs << "simlar_" + std::to_string(k) << cv::Mat(3, 3, CV_32FC1, config.D3transform_[k].simlar);
-        }
-
-        fs.release();
+        fs.writeComment("D3transform " + std::to_string(k));
+        fs << "offset_" + std::to_string(k) << cv::Mat(3, 1, CV_32FC1, config.D3transform_[k].orig);
+        fs << "simlar_" + std::to_string(k) << cv::Mat(3, 3, CV_32FC1, config.D3transform_[k].simlar);
     }
-    catch(const std::exception& e)
-    {
-        throw;
-    }
+
+    fs.release();
 }
 
 }  // namespace whycode_ros2

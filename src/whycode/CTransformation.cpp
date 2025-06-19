@@ -23,16 +23,14 @@ CTransformation::CTransformation(float circle_diam) :
 {
 }
 
-void CTransformation::setTransformType(const ETransformType trans_type)
+void CTransformation::setTransformType(ETransformType trans)
 {
-    if(calibrated_ || trans_type == TRANSFORM_NONE)
-    {
-        transform_type_ = trans_type;
-    }
-    else
-    {
-        throw std::runtime_error("Calibrated coordinate system is not avaiable. Either load it or create it.");
-    }
+    transform_type_ = trans;
+}
+
+void CTransformation::setTransformType(int trans)
+{
+    transform_type_ = static_cast<ETransformType>(trans);
 }
 
 ETransformType CTransformation::getTransformType()

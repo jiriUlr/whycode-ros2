@@ -40,19 +40,24 @@ class CTransformation
 
         /* get/set transformation type */
         ETransformType getTransformType();
-        void setTransformType(const ETransformType trans_type);
+
+        void setTransformType(int trans);
+
+        void setTransformType(ETransformType trans);
 
         /* update circle diameter */
         void setCircleDiameter(const float circle_diam);
 
         /* establish the user-defined coordinate system from four calibration patterns - see 4.4 of [1] */
         void calibrate2D(const STrackedObject *in, const float g_dim_x, const float g_dim_y, const float robot_radius = 0.0, const float robot_height = 0.0, const float camera_height = 1.0);
+
         void calibrate3D(const STrackedObject *o, const float g_dim_x, const float g_dim_y);
 
-
-
         void setCalibrationConfig(const CalibrationConfig &config);
+
         CalibrationConfig getCalibrationConfig();
+
+        bool is_calibrated(){ return calibrated_; };
 
     private:
         /* transform into planar coordinates */
@@ -83,7 +88,7 @@ class CTransformation
         /* calculate the pattern 3D position from its ellipse characteristic equation, see 4.3 of [1] */
         SEllipseCenters calcEigen(const float *data);
 
-        bool calibrated_;           // whether the user defined coordinate system is avaiable
+        bool calibrated_ = false;           // whether the user defined coordinate system is avaiable
         float grid_dim_x_;          // x unit dimention of 2D coordinate
         float grid_dim_y_;          // y unit dimention of 2D coordinate
         float circle_diameter_;     // outer circle diameter [m]

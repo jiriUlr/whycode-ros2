@@ -7,16 +7,16 @@ namespace whycode
 struct Parameters
 {
     // static params
-    bool use_gui;
     int id_bits;
     int id_samples;
     int hamming_dist;
-    int coords_method;
-
+    
     // dynamic params
+    bool use_gui;
     bool identify = true;
     int num_markers = 1;
     int min_size = 100;
+    int coords_method;
     double circle_diameter = 0.122;
     double field_length = 1.0;
     double field_width = 1.0;

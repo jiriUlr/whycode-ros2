@@ -2,6 +2,7 @@
 #define WHYCODEROS2_CWHYCODEROSNODE_H
 
 #include <vector>
+#include <memory>
 
 #include <rclcpp/rclcpp.hpp>
 #include <image_transport/image_transport.hpp>
@@ -10,15 +11,9 @@
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/image.hpp>
 
-// #include <rcl_interfaces/msg/SetParametersResult.hpp>
-
 #include <whycode_interfaces/srv/select_marker.hpp>
 #include <whycode_interfaces/srv/set_calib_method.hpp>
 #include <whycode_interfaces/srv/set_calib_path.hpp>
-#include <whycode_interfaces/srv/set_coords.hpp>
-#include <whycode_interfaces/srv/set_drawing.hpp>
-#include <whycode_interfaces/srv/get_gui_settings.hpp>
-
 #include <whycode_interfaces/msg/marker_array.hpp>
 #include <whycode_interfaces/msg/marker.hpp>
 
@@ -35,15 +30,6 @@ public:
 
     CWhycodeROSNode();
 
-    void getGuiSettingsCallback(const std::shared_ptr<whycode_interfaces::srv::GetGuiSettings::Request> req,
-                                      std::shared_ptr<whycode_interfaces::srv::GetGuiSettings::Response> res);
-
-    void setDrawingCallback(const std::shared_ptr<whycode_interfaces::srv::SetDrawing::Request> req,
-                                  std::shared_ptr<whycode_interfaces::srv::SetDrawing::Response> res);
-
-    void setCoordsCallback(const std::shared_ptr<whycode_interfaces::srv::SetCoords::Request> req,
-                                 std::shared_ptr<whycode_interfaces::srv::SetCoords::Response> res);
-
     void setCalibMethodCallback(const std::shared_ptr<whycode_interfaces::srv::SetCalibMethod::Request> req,
                                       std::shared_ptr<whycode_interfaces::srv::SetCalibMethod::Response> res);
 
@@ -58,11 +44,15 @@ public:
     void imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &msg);
 
     void saveCalibration(const std::string &str);
+
     void loadCalibration(const std::string &str);
 
     rcl_interfaces::msg::SetParametersResult validate_upcoming_parameters_callback(const std::vector<rclcpp::Parameter> & parameters);
+    
     void react_to_updated_parameters_callback(const std::vector<rclcpp::Parameter> & parameters);
+    
     void process_node_parameters();
+    
     void process_lib_parameters();
 
 private:
@@ -85,17 +75,9 @@ private:
     rclcpp::Service<whycode_interfaces::srv::SetCalibPath>::SharedPtr   calib_path_srv_;
     rclcpp::Service<whycode_interfaces::srv::SelectMarker>::SharedPtr   select_marker_srv_;
 
-    bool draw_coords_;
-    bool use_gui_;                  // generate images for graphic interface?
-    std::unique_ptr<whycode::CWhycode> whycode_;     // WhyCon instance
-    whycode::CRawImage image_;      // image wrapper for WhyCon
-    double circle_diameter_;        // marker diameter [m]
-
-    std::vector<whycode::SMarker> whycode_detections_;    // array of detected markers
-    
-    bool identify_;
-    int num_markers_;
-    int min_size_;
+    std::unique_ptr<whycode::CWhycode> whycode_;
+    std::vector<whycode::SMarker> whycode_detections_;
+    whycode::CRawImage image_;
 };
 
 }  // namespace whycode_ros2

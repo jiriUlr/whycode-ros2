@@ -7,44 +7,6 @@
 namespace whycode
 {
 
-bool CWhycode::getDrawCoords()
-{
-    return draw_coords_;
-}
-
-bool CWhycode::getDrawSegments()
-{
-    return draw_segments_;
-}
-
-int CWhycode::getCoordinates()
-{
-    return trans_->getTransformType();
-}
-
-void CWhycode::setDrawing(bool draw_coords, bool draw_segments)
-{
-    draw_coords_ = draw_coords;
-    draw_segments_ = draw_segments;
-
-    for(int i = 0; i < num_markers_; i++)
-    {
-        detector_array_[i]->setDraw(draw_segments_);
-    }
-}
-
-void CWhycode::setCoordinates(ETransformType trans_type)
-{
-    try
-    {
-        trans_->setTransformType(trans_type);
-    }
-    catch(const std::exception& e)
-    {
-        throw;
-    }
-}
-
 void CWhycode::autocalibration()
 {
     if(num_found_ < 4)
@@ -54,7 +16,7 @@ void CWhycode::autocalibration()
     else
     {
         calib_step_ = 0;
-        was_markers_ = num_markers_;
+        was_markers_ = params_.num_markers;
 
         last_transform_type_ = trans_->getTransformType();
         trans_->setTransformType(TRANSFORM_NONE);
@@ -72,8 +34,8 @@ void CWhycode::manualcalibration()
     else
     {
         calib_num_ = 0;
-        was_markers_ = num_markers_;
-        num_markers_ = 1;
+        was_markers_ = params_.num_markers;
+        params_.num_markers = 1;
 
         last_transform_type_ = trans_->getTransformType();
         trans_->setTransformType(TRANSFORM_NONE);
@@ -91,7 +53,7 @@ void CWhycode::selectMarker(float x, float y)
             calib_step_ = 0;
             trans_->setTransformType(TRANSFORM_NONE);
         }
-        if (num_markers_ > 0)
+        if (params_.num_markers > 0)
         {
             current_marker_array_[0].seg.x = x; 
             current_marker_array_[0].seg.y = y;
@@ -106,7 +68,7 @@ void CWhycode::selectMarker(float x, float y)
 }
 
 /*manual calibration can be initiated by pressing 'r'
-  and then clicking circles at four positions (0,0)(field_length_,0)...*/
+  and then clicking circles at four positions (0,0)(params_.field_length,0)...*/
 void CWhycode::manualCalib()
 {
     if(current_marker_array_[0].valid)
@@ -139,10 +101,10 @@ void CWhycode::manualCalib()
             if(calib_num_ == 4)
             {
                 //calculate and save transforms
-                trans_->calibrate2D(calib_, field_length_, field_width_);
-                trans_->calibrate3D(calib_, field_length_, field_width_);
+                trans_->calibrate2D(calib_, params_.field_length, params_.field_width);
+                trans_->calibrate3D(calib_, params_.field_length, params_.field_width);
                 calib_num_++;
-                num_markers_ = was_markers_;
+                params_.num_markers = was_markers_;
                 trans_->setTransformType(last_transform_type_);
                 detector_array_[0]->localSearch = false;
                 mancalibrate_ = false;
@@ -155,76 +117,76 @@ void CWhycode::manualCalib()
 }
 
 /*finds four outermost circles and uses them to set-up the coordinate system
-  [0,0] is left-top, [0,field_length_] next in clockwise direction*/
-// void CWhycode::autoCalib()
-// {
-//     int ok_last_tracks = 0;
-//     for(int i = 0; i < num_markers_; i++)
-//     {
-//         if(detector_array_[i]->lastTrackOK)
-//         {
-//             ++ok_last_tracks;
-//         }
-//     }
-//     if(ok_last_tracks < 4)
-//     {
-//         return;
-//     }
+  [0,0] is left-top, [0,params_.field_length] next in clockwise direction*/
+/*void CWhycode::autoCalib()
+{
+    int ok_last_tracks = 0;
+    for(int i = 0; i < params_.num_markers; i++)
+    {
+        if(detector_array_[i]->lastTrackOK)
+        {
+            ++ok_last_tracks;
+        }
+    }
+    if(ok_last_tracks < 4)
+    {
+        return;
+    }
 
-//     int index[] = {0, 0, 0, 0};
-//     int max_eval = 0;
-//     int eval = 0;
-//     int sX[] = {-1, +1, -1, +1};
-//     int sY[] = {+1, +1, -1, -1};
-//     for(int b = 0; b < 4; b++)
-//     {
-//         max_eval = -10000000;
-//         for(int i = 0; i < num_markers_; i++)
-//         {
-//             eval =  sX[b] * current_marker_array_[i].seg.x + sY[b] * current_marker_array_[i].seg.y;
-//             if(eval > max_eval)
-//             {
-//                 max_eval = eval;
-//                 index[b] = i;
-//             }
-//         }
-//     }
-//     printf("INDEX: %i %i %i %i\n", index[0], index[1], index[2], index[3]);
+    int index[] = {0, 0, 0, 0};
+    int max_eval = 0;
+    int eval = 0;
+    int sX[] = {-1, +1, -1, +1};
+    int sY[] = {+1, +1, -1, -1};
+    for(int b = 0; b < 4; b++)
+    {
+        max_eval = -10000000;
+        for(int i = 0; i < params_.num_markers; i++)
+        {
+            eval =  sX[b] * current_marker_array_[i].seg.x + sY[b] * current_marker_array_[i].seg.y;
+            if(eval > max_eval)
+            {
+                max_eval = eval;
+                index[b] = i;
+            }
+        }
+    }
+    printf("INDEX: %i %i %i %i\n", index[0], index[1], index[2], index[3]);
 
-//     for(int i = 0; i < 4; i++)
-//     {
-//         if (calib_step_ <= auto_calibration_pre_steps_)
-//         {
-//             calib_[i].x = calib_[i].y = calib_[i].z = 0;
-//         }
-//         calib_[i].x += current_marker_array_[index[i]].obj.x;
-//         calib_[i].y += current_marker_array_[index[i]].obj.y;
-//         calib_[i].z += current_marker_array_[index[i]].obj.z;
-//     }
-//     calib_step_++;
-//     if (calib_step_ == auto_calibration_steps_)
-//     {
-//         for(int i = 0; i < 4; i++)
-//         {
-//             calib_[i].x = calib_[i].x / (auto_calibration_steps_ - auto_calibration_pre_steps_);
-//             calib_[i].y = calib_[i].y / (auto_calibration_steps_ - auto_calibration_pre_steps_);
-//             calib_[i].z = calib_[i].z / (auto_calibration_steps_ - auto_calibration_pre_steps_);
-//         }
-//         trans_->calibrate2D(calib_, field_length_, field_width_);
-//         trans_->calibrate3D(calib_, field_length_, field_width_);
-//         calib_num_++;
-//         num_markers_ = was_markers_;
-//         trans_->setTransformType(last_transform_type_);
-//         autocalibrate_ = false;
-//         printf("autoCalib done\n");
-//     }
-// }
+    for(int i = 0; i < 4; i++)
+    {
+        if (calib_step_ <= auto_calibration_pre_steps_)
+        {
+            calib_[i].x = calib_[i].y = calib_[i].z = 0;
+        }
+        calib_[i].x += current_marker_array_[index[i]].obj.x;
+        calib_[i].y += current_marker_array_[index[i]].obj.y;
+        calib_[i].z += current_marker_array_[index[i]].obj.z;
+    }
+    calib_step_++;
+    if (calib_step_ == auto_calibration_steps_)
+    {
+        for(int i = 0; i < 4; i++)
+        {
+            calib_[i].x = calib_[i].x / (auto_calibration_steps_ - auto_calibration_pre_steps_);
+            calib_[i].y = calib_[i].y / (auto_calibration_steps_ - auto_calibration_pre_steps_);
+            calib_[i].z = calib_[i].z / (auto_calibration_steps_ - auto_calibration_pre_steps_);
+        }
+        trans_->calibrate2D(calib_, params_.field_length, params_.field_width);
+        trans_->calibrate3D(calib_, params_.field_length, params_.field_width);
+        calib_num_++;
+        params_.num_markers = was_markers_;
+        trans_->setTransformType(last_transform_type_);
+        autocalibrate_ = false;
+        printf("autoCalib done\n");
+    }
+}*/
 
 void CWhycode::autoCalib()
 {
     printf("autocalib start point. step %d\n", calib_step_);
     int ok_last_tracks = 0;
-    for(int i = 0; i < num_markers_; i++)
+    for(int i = 0; i < params_.num_markers; i++)
     {
         if(detector_array_[i]->lastTrackOK)
         {
@@ -246,7 +208,7 @@ void CWhycode::autoCalib()
         {
             max_eval = -10000000;
             int best_index = 0;
-            for(int i = 0; i < num_markers_; i++)
+            for(int i = 0; i < params_.num_markers; i++)
             {
                 if(current_marker_array_[i].valid)
                 {
@@ -293,11 +255,11 @@ void CWhycode::autoCalib()
                 calib_[i].z = calib_[i].z / (auto_calibration_steps_ - auto_calibration_pre_steps_);
                 // printf("i %d -- %f %f %f\n", i, calib_[i].x, calib_[i].y, calib_[i].z);
             }
-            trans_->calibrate2D(calib_, field_length_, field_width_);
+            trans_->calibrate2D(calib_, params_.field_length, params_.field_width);
             // trans_->calibrate2D(calib_, homo_square_pts_);
-            trans_->calibrate3D(calib_, field_length_, field_width_);
+            trans_->calibrate3D(calib_, params_.field_length, params_.field_width);
             calib_num_++;
-            // num_markers_ = was_markers_;
+            // params_.num_markers = was_markers_;
             trans_->setTransformType(last_transform_type_);
             autocalibrate_ = false;
             printf("autoCalib done\n");
@@ -313,7 +275,7 @@ void CWhycode::processImage(CRawImage &image, std::vector<SMarker> &whycode_dete
 
 
     // track the markers found in the last attempt
-    for(int i = 0; i < num_markers_; i++)
+    for(int i = 0; i < params_.num_markers; i++)
     {
         if(current_marker_array_[i].valid)
         {
@@ -323,7 +285,7 @@ void CWhycode::processImage(CRawImage &image, std::vector<SMarker> &whycode_dete
     }
 
     // search for untracked (not detected in the last frame) markers
-    for(int i = 0; i < num_markers_; i++)
+    for(int i = 0; i < params_.num_markers; i++)
     {
         if(current_marker_array_[i].valid == false)
         {
@@ -334,11 +296,11 @@ void CWhycode::processImage(CRawImage &image, std::vector<SMarker> &whycode_dete
         if(current_marker_array_[i].seg.valid == false) break;  //does not make sense to search for more patterns if the last one was not found
     }
 
-    for(int i = 0; i < num_markers_; i++)
+    for(int i = 0; i < params_.num_markers; i++)
     {
         if(current_marker_array_[i].valid)
         {
-            if(identify_ && current_marker_array_[i].seg.ID <= -1)
+            if(params_.identify && current_marker_array_[i].seg.ID <= -1)
             {
                 current_marker_array_[i].seg.angle = last_marker_array_[i].seg.angle;
                 current_marker_array_[i].seg.ID = last_marker_array_[i].seg.ID;
@@ -350,7 +312,7 @@ void CWhycode::processImage(CRawImage &image, std::vector<SMarker> &whycode_dete
 
     eval_time_ = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count();
 
-    for(int i = 0; i < num_markers_; i++)
+    for(int i = 0; i < params_.num_markers; i++)
     {
         if(current_marker_array_[i].valid)
         {
@@ -359,16 +321,16 @@ void CWhycode::processImage(CRawImage &image, std::vector<SMarker> &whycode_dete
     }
 
     // draw stuff on the GUI
-    if(use_gui_)
+    if(params_.use_gui)
     {
         image.drawTimeStats(eval_time_, num_found_);
 
         if(mancalibrate_)
         {
-            image.drawGuideCalibration(calib_num_, field_length_, field_width_);
+            image.drawGuideCalibration(calib_num_, params_.field_length, params_.field_width);
         }
 
-        for(int i = 0; i < num_markers_ && draw_coords_; i++)
+        for(int i = 0; i < params_.num_markers && params_.draw_coords; i++)
         {
             if(current_marker_array_[i].valid)
             {
@@ -378,7 +340,7 @@ void CWhycode::processImage(CRawImage &image, std::vector<SMarker> &whycode_dete
     }
 
     // establishing the coordinate system by manual or autocalibration
-    if (autocalibrate_ && num_found_ > 3) //num_found_ == num_markers_)
+    if (autocalibrate_ && num_found_ > 3) //num_found_ == params_.num_markers)
     {
         autoCalib();
     }
@@ -415,48 +377,42 @@ void CWhycode::init(float circle_diam, int id_b, int id_s, int ham_dist)
     id_bits_ = id_b;
     id_samples_ = id_s;
     hamming_dist_ = ham_dist;
+
     trans_ = new CTransformation(circle_diam);
     decoder_ = new CNecklace(id_bits_, id_samples_, hamming_dist_);
+    calib_tmp_.resize(calibration_steps_);
 }
 
-void CWhycode::set_parameters(Parameters &params)
+void CWhycode::set_parameters(Parameters &p)
 {
-    params_ = params;
+    params_ = p;
 
     trans_->setCircleDiameter(params_.circle_diameter);
-    field_length_ = params_.field_length;
-    field_width_ = params_.field_width;
-    identify_ = params_.identify;
-    num_markers_ = params_.num_markers;
-    use_gui_ = params_.use_gui;
-    id_bits_ = params_.id_bits;
-    id_samples_ = params_.id_samples;
-    hamming_dist_ = params_.hamming_dist;
+    trans_->setTransformType(trans_type);
 
-    if(detector_array_.size() != num_markers_)
+    if(detector_array_.size() != params_.num_markers)
     {
-        current_marker_array_.resize(num_markers_);
-        last_marker_array_.resize(num_markers_);
+        current_marker_array_.resize(params_.num_markers);
+        last_marker_array_.resize(params_.num_markers);
 
-        if(detector_array_.size() < num_markers_)
+        if(detector_array_.size() < params_.num_markers)
         {
-            for(int i = 0; i < num_markers_ - detector_array_.size(); i++)
+            for(int i = 0; i < params_.num_markers - detector_array_.size(); ++i)
             {
-                detector_array_.emplace_back(std::make_unique<CCircleDetect>(identify_, id_bits_, id_samples_, draw_segments_, trans_, decoder_));
+                detector_array_.emplace_back(std::make_unique<CCircleDetect>(params_.identify, id_bits_, id_samples_, params_.draw_segments, trans_, decoder_));
             }
         }
         else
         {
-            detector_array_.resize(num_markers_);
+            detector_array_.resize(params_.num_markers);
         }
     }
-
-    calib_tmp_.resize(calibration_steps_);
 
     for(auto & detector : detector_array_)
     {
         detector->reconfigure(params_.initial_circularity_tolerance, params_.final_circularity_tolerance, params_.area_ratio_tolerance,
-                              params_.center_distance_tolerance_ratio, params_.center_distance_tolerance_abs, identify_, params_.min_size);
+                              params_.center_distance_tolerance_ratio, params_.center_distance_tolerance_abs, params_.identify, params_.min_size);
+        detector->setDraw(params_.draw_segments);
     }
 }
 

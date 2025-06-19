@@ -22,14 +22,7 @@ namespace whycode
 class CWhycode {
 
     public:
-
-        float circle_diameter_;         // default black circle diameter [m];
-        float field_length_ = 1.0;      // X dimension of the coordinate system
-        float field_width_ = 1.0;       // Y dimension of the coordinate system
-
         // marker detection variables
-        bool identify_ = false;     // whether to identify ID
-        int num_markers_ = 0;           // num of markers to track
         int num_found_ = 0;         // num of markers detected in the last step
         int num_static_ = 0;        // num of non-moving markers
 
@@ -44,8 +37,6 @@ class CWhycode {
 
         void setDrawing(bool draw_coords, bool draw_segments);
 
-        void setCoordinates(ETransformType type);
-
         void autocalibration();
 
         void manualcalibration();
@@ -56,13 +47,7 @@ class CWhycode {
 
         void processImage(CRawImage &image, std::vector<SMarker> &whycode_detections);
 
-        bool getDrawCoords();
-
-        bool getDrawSegments();
-
-        int getCoordinates();
-
-        void set_parameters(Parameters &params);
+        void set_parameters(Parameters &p);
 
         Parameters get_parameters();
 
@@ -70,14 +55,13 @@ class CWhycode {
 
         CalibrationConfig getCalibrationConfig();
 
+        bool is_calibrated(){ return trans->is_calibrated(); };
+
     private:
 
         Parameters params_;
 
         // GUI-related stuff
-        bool use_gui_;          // whether use graphic interface
-        bool draw_coords_ = true;      // draw coordinates at the marker's positions
-        bool draw_segments_ = false;    // draw segmentation outcome
         int eval_time_;         // time required to detect the patterns
 
         CTransformation *trans_;    // transformation instance
