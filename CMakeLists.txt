@@ -50,7 +50,7 @@ ament_target_dependencies(whycode_node rclcpp std_msgs sensor_msgs geometry_msgs
 #############
 
 install(
-  DIRECTORY launch
+  DIRECTORY launch config
   DESTINATION share/${PROJECT_NAME}
 )
 
