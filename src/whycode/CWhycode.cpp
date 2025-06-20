@@ -268,6 +268,10 @@ void CWhycode::autoCalib()
     ++calib_step_;
 }
 
+bool CWhycode::is_calibrated() {
+    return trans_->is_calibrated();
+};
+
 void CWhycode::processImage(CRawImage &image, std::vector<SMarker> &whycode_detections)
 {
     auto start = std::chrono::steady_clock::now();
@@ -388,7 +392,7 @@ void CWhycode::set_parameters(Parameters &p)
     params_ = p;
 
     trans_->setCircleDiameter(params_.circle_diameter);
-    trans_->setTransformType(trans_type);
+    trans_->setTransformType(params_.coords_method);
 
     if(detector_array_.size() != params_.num_markers)
     {

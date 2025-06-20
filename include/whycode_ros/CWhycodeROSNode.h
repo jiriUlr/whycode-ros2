@@ -67,10 +67,7 @@ private:
 
     image_transport::Subscriber img_sub_;
     image_transport::Publisher  img_pub_;
-    
-    rclcpp::Service<whycode_interfaces::srv::GetGuiSettings>::SharedPtr gui_settings_srv_;
-    rclcpp::Service<whycode_interfaces::srv::SetDrawing>::SharedPtr     drawing_srv_;
-    rclcpp::Service<whycode_interfaces::srv::SetCoords>::SharedPtr      coord_system_srv_;
+
     rclcpp::Service<whycode_interfaces::srv::SetCalibMethod>::SharedPtr calib_method_srv_;
     rclcpp::Service<whycode_interfaces::srv::SetCalibPath>::SharedPtr   calib_path_srv_;
     rclcpp::Service<whycode_interfaces::srv::SelectMarker>::SharedPtr   select_marker_srv_;

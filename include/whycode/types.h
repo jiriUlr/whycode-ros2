@@ -1,11 +1,15 @@
 #ifndef WHYCODE__SSTRUCTDEFS_H
 #define WHYCODE__SSTRUCTDEFS_H
 
+
 namespace whycode
 {
 
 struct Parameters
 {
+    bool draw_coords;
+    bool draw_segments;
+
     // static params
     int id_bits;
     int id_samples;
@@ -73,9 +77,6 @@ struct STrackedObject
     float angle;                // axis angle around marker's surface normal
     float n0, n1, n2;           // marker surface normal pointing from the camera
     float qx, qy, qz, qw;       // quaternion
-    // ??? not used float roundness;            // segment roundness as calculated by 5 of [1]
-    // ??? not used float bwratio;              // black/white area ratio
-    // ??? not used int ID;                     // ID of marker
 };
 
 struct SEllipseCenters
@@ -100,8 +101,6 @@ struct SMarker
     STrackedObject obj;
 };
 
-
-
 struct CalibrationConfig
 {
     float grid_dim_x_;              // x unit dimention of 2D coordinate
@@ -110,8 +109,7 @@ struct CalibrationConfig
     S3DTransform D3transform_[4];   // transformation description for 3D
 };
 
-
-
 }  // namespace whycode
+
 
 #endif  // WHYCODE__SSTRUCTDEFS_H

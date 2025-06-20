@@ -55,7 +55,7 @@ class CWhycode {
 
         CalibrationConfig getCalibrationConfig();
 
-        bool is_calibrated(){ return trans->is_calibrated(); };
+        bool is_calibrated();
 
     private:
 
