@@ -26,9 +26,6 @@ class CCircleDetect {
         //constructor, wi and he correspond to the image dimensions 
         CCircleDetect(bool id, int bits, int samples, bool draw, CTransformation *trans, CNecklace *decoder);
 
-        //deallocate the detector's structures
-        ~CCircleDetect();
-
         // dynamic reconfigure of parameters
         void reconfigure(float ict,float fct,float art,float cdtr,float cdta, bool id, int minS);
 
