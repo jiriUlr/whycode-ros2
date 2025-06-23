@@ -4,8 +4,7 @@
 
 #include "whycode/CWhycode.h"
 
-namespace whycode
-{
+namespace whycode {
 
 void CWhycode::autocalibration() {
   if (num_found_ < 4) {
@@ -334,4 +333,4 @@ Parameters CWhycode::get_parameters() {
   return params_;
 }
 
-}
+}  // namespace whycode

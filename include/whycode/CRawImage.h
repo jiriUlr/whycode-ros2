@@ -3,14 +3,10 @@
 
 #include "whycode/types.h"
 
-namespace whycode
-{
+namespace whycode {
 
-class CRawImage
-{
-
+class CRawImage {
 public:
-
   CRawImage() = default;
 
   CRawImage(int width, int height, int bpp);
@@ -31,6 +27,6 @@ public:
   unsigned char * data_ = nullptr;
 };
 
-}
+}  // namespace whycode
 
 #endif  // WHYCODE__CRAWIMAGE_H

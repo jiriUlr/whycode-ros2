@@ -8,8 +8,7 @@
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-namespace whycode_ros2
-{
+namespace whycode_ros2 {
 
 void CWhycodeROSNode::setCalibMethodCallback(const std::shared_ptr<whycode_interfaces::srv::SetCalibMethod::Request> req,
                                                   std::shared_ptr<whycode_interfaces::srv::SetCalibMethod::Response> res) {

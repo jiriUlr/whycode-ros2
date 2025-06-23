@@ -3,16 +3,12 @@
 
 #include "whycode/CTransformation.h"
 
-namespace whycode
-{
+namespace whycode {
 
-CTransformation::CTransformation(float circle_diam) :
-  transform_type_(TRANSFORM_NONE),
-  circle_diameter_(circle_diam),
+CTransformation::CTransformation(float circle_diam)
+: transform_type_(TRANSFORM_NONE), circle_diameter_(circle_diam),
   intrinsic_mat_(cv::Mat::eye(3,3, CV_32FC1)),
-  distortion_coeffs_(cv::Mat::zeros(1,5, CV_32FC1))
-{
-}
+  distortion_coeffs_(cv::Mat::zeros(1,5, CV_32FC1)) {}
 
 void CTransformation::setTransformType(ETransformType trans) {
   transform_type_ = trans;
@@ -557,4 +553,4 @@ void CTransformation::calcEulerFromQuat(STrackedObject &obj) {
   // std::printf("roll %.3f pitch %.3f yaw %.3f\n", obj.roll, obj.pitch, obj.yaw);
 }
 
-}
+}  // namespace whycode

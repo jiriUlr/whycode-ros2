@@ -4,8 +4,7 @@
 #define min(a,b) ((a) < (b) ? (a) : (b))
 #define max(a,b) ((a) > (b) ? (a) : (b))
 
-namespace whycode
-{
+namespace whycode {
 
 std::unique_ptr<int> CCircleDetect::buffer = std::unique_ptr<int>();
 std::unique_ptr<int> CCircleDetect::queue = std::unique_ptr<int>();
@@ -13,13 +12,9 @@ int CCircleDetect::width = 0;
 int CCircleDetect::height = 0;
 int CCircleDetect::len = 0;
 
-CCircleDetect::CCircleDetect(bool id, int bits, int samples, bool draw, CTransformation *trans, CNecklace *decoder) :
-  identify(id),
-  idBits(bits),
-  idSamples(samples),
-  draw_(draw),
-  trans_(trans),
-  decoder_(decoder)
+CCircleDetect::CCircleDetect(bool id, int bits, int samples, bool draw, CTransformation *trans, CNecklace *decoder)
+: identify(id), idBits(bits), idSamples(samples), draw_(draw),
+  trans_(trans), decoder_(decoder)
 {
   step = -1;
   ID = -1;
@@ -700,4 +695,4 @@ void CCircleDetect::setDraw(bool draw) {
   draw_ = draw;
 }
 
-}
+}  // namespace whycode

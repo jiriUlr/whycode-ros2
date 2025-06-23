@@ -6,49 +6,47 @@
 #include <stdio.h>
 #include "whycode/types.h"
 
-namespace whycode
-{
+namespace whycode {
 
-typedef struct {
+struct SNecklace {
     int id;
     int rotation;
     int hamming;
-} SNecklace;
+};
 
 
 class CNecklace {
+public:
+  CNecklace(int bits, int samples, int minimalHamming = 1);
 
-    public:
-        CNecklace(int bits, int samples, int minimalHamming = 1);
+  ~CNecklace();
 
-        ~CNecklace();
+  SNecklace get(int sequence, bool probabilistic = false, float confidence = 1.0);
 
-        SNecklace get(int sequence, bool probabilistic = false, float confidence = 1.0);
+  int verifyHamming(int a[], int bits, int len);
 
-        int verifyHamming(int a[], int bits, int len);
+  float observationEstimation(float confidence);
 
-        float observationEstimation(float confidence);
+  SDecoded decode(char *code, char *realCode, int maxIndex, float segmentV0, float segmentV1);
 
-        SDecoded decode(char *code, char *realCode, int maxIndex, float segmentV0, float segmentV1);
+private:
+  SNecklace unknown;      // default unknown ID
+  SNecklace *idArray;     // precalculated IDs
 
-    private:
-        SNecklace unknown;      // default unknown ID
-        SNecklace *idArray;     // precalculated IDs
+  float* probArray;       // probability for each ID
+  int maxID;              // max ID used for Bayes probability
+  int idSamples;          // samples to determine black/white signal
+  int length;             // number of ID bits
+  int idLength;           // amount of all possible IDs
+  bool debug;             // debugging the class
 
-        float* probArray;       // probability for each ID
-        int maxID;              // max ID used for Bayes probability
-        int idSamples;          // samples to determine black/white signal
-        int length;             // number of ID bits
-        int idLength;           // amount of all possible IDs
-        bool debug;             // debugging the class
+  int getEstimatedID();
 
-        int getEstimatedID();
+  int getHamming(int a, int b);
 
-        int getHamming(int a, int b);
-
-        int getMinimalHamming(int a, int len);
+  int getMinimalHamming(int a, int len);
 };
 
-}
+}  // namespace whycode
 
 #endif  // WHYCODE__CNECKLACE_H
