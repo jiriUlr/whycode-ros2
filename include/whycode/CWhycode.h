@@ -10,6 +10,8 @@
 #include <cmath>
 #include <memory>
 
+#include <opencv2/opencv.hpp>
+
 // WhyCode libs
 #include "whycode/CCircleDetect.h"
 #include "whycode/CTransformation.h"
@@ -49,11 +51,15 @@ public:
 
   Parameters get_parameters();
 
+  bool is_calibrated();
+
   void setCalibrationConfig(const CalibrationConfig &config);
 
   CalibrationConfig getCalibrationConfig();
 
-  bool is_calibrated();
+  void saveCalibration(const std::string &str);
+
+  void loadCalibration(const std::string &str);
 
 private:
   Parameters params_;

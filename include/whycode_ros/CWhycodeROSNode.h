@@ -22,6 +22,13 @@
 
 namespace whycode_ros2 {
 
+struct Parameters {
+  std::string img_transport;
+  std::string img_base_topic;
+  std::string info_topic;
+  std::string calib_path;
+};
+
 class CWhycodeROSNode : public rclcpp::Node {
 public:
   CWhycodeROSNode();
@@ -39,36 +46,35 @@ public:
 
   void imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &msg);
 
-  void saveCalibration(const std::string &str);
-
-  void loadCalibration(const std::string &str);
-
   rcl_interfaces::msg::SetParametersResult validate_upcoming_parameters_callback(const std::vector<rclcpp::Parameter> & parameters);
   
   void react_to_updated_parameters_callback(const std::vector<rclcpp::Parameter> & parameters);
   
   void process_node_parameters();
   
-  void process_lib_parameters();
+  whycode::Parameters process_lib_parameters();
 
 private:
-  whycode::Parameters why_params_;
-
+  // parameters
+  Parameters node_params_;
   rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr   on_set_parameters_callback_handle_;
   rclcpp::node_interfaces::PostSetParametersCallbackHandle::SharedPtr post_set_parameters_callback_handle_;
 
+  // subscribers
+  image_transport::Subscriber img_sub_;
   rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr      cam_info_sub_;
+
+  // publishers
+  image_transport::Publisher  img_pub_;
   rclcpp::Publisher<whycode_interfaces::msg::MarkerArray>::SharedPtr markers_pub_;
 
-  image_transport::Subscriber img_sub_;
-  image_transport::Publisher  img_pub_;
-
+  // services
   rclcpp::Service<whycode_interfaces::srv::SetCalibMethod>::SharedPtr calib_method_srv_;
   rclcpp::Service<whycode_interfaces::srv::SetCalibPath>::SharedPtr   calib_path_srv_;
   rclcpp::Service<whycode_interfaces::srv::SelectMarker>::SharedPtr   select_marker_srv_;
 
+  // whycode lib objects
   std::unique_ptr<whycode::CWhycode> whycode_;
-  std::vector<whycode::SMarker> whycode_detections_;
   whycode::CRawImage image_;
 };
 

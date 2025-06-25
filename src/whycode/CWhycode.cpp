@@ -333,4 +333,68 @@ Parameters CWhycode::get_parameters() {
   return params_;
 }
 
+void CWhycode::loadCalibration(const std::string &str) {
+  whycode::CalibrationConfig config;
+
+  cv::FileStorage fs(str, cv::FileStorage::READ);
+  if (!fs.isOpened()) {
+    throw std::runtime_error("Could not open/load calibration file. " + str);
+  }
+
+  fs["dim_x"] >> config.grid_dim_x_;
+  fs["dim_y"] >> config.grid_dim_y_;
+
+  cv::Mat hom_tmp(3, 3, CV_32FC1);
+  fs["hom"] >> hom_tmp;
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 3; ++j) {
+      config.hom_[3 * i + j] = hom_tmp.at<float>(i, j);
+    }
+  }
+
+  for (int k = 0; k < 4; ++k) {
+    cv::Mat offset_tmp(3, 1, CV_32FC1);
+    fs["offset_" + std::to_string(k)] >> offset_tmp;
+    for (int i = 0; i < 3; ++i) {
+      config.D3transform_[k].orig[i] = offset_tmp.at<float>(i);
+    }
+
+    cv::Mat simlar_tmp(3, 3, CV_32FC1);
+    fs["simlar_" + std::to_string(k)] >> simlar_tmp;
+    for (int i = 0; i < 3; ++i) {
+      for (int j = 0; j < 3; ++j) {
+        config.D3transform_[k].simlar[3 * i + j] = simlar_tmp.at<float>(i, j);
+      }
+    }
+  }
+
+  fs.release();
+
+  setCalibrationConfig(config);
+}
+
+void CWhycode::saveCalibration(const std::string &str) {
+  whycode::CalibrationConfig config = getCalibrationConfig();
+
+  cv::FileStorage fs(str, cv::FileStorage::WRITE);
+  if (!fs.isOpened()) {
+    throw std::runtime_error("Could not open/create calibration file. " + str);
+  }
+
+  fs.writeComment("Dimensions");
+  fs << "dim_x" << config.grid_dim_x_;
+  fs << "dim_y" << config.grid_dim_y_;
+  fs.writeComment("2D calibration");
+  fs << "hom" << cv::Mat(3, 3, CV_32FC1, config.hom_);
+  fs.writeComment("3D calibration");
+
+  for (int k = 0; k < 4; ++k) {
+    fs.writeComment("D3transform " + std::to_string(k));
+    fs << "offset_" + std::to_string(k) << cv::Mat(3, 1, CV_32FC1, config.D3transform_[k].orig);
+    fs << "simlar_" + std::to_string(k) << cv::Mat(3, 3, CV_32FC1, config.D3transform_[k].simlar);
+  }
+
+  fs.release();
+}
+
 }  // namespace whycode

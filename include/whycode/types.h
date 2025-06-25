@@ -5,20 +5,19 @@
 namespace whycode {
 
 struct Parameters {
-  bool draw_coords;
-  bool draw_segments;
-
   // static params
   int id_bits;
   int id_samples;
   int hamming_dist;
   
   // dynamic params
-  bool use_gui;
+  bool draw_coords = true;
+  bool draw_segments = true;
+  bool use_gui = true;
   bool identify = true;
+  int coords_method;
   int num_markers = 1;
   int min_size = 100;
-  int coords_method;
   double circle_diameter = 0.122;
   double field_length = 1.0;
   double field_width = 1.0;

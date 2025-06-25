@@ -6,7 +6,7 @@ from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
     params_file_arg = DeclareLaunchArgument(
-        'params_file',
+        'params-file',
         default_value='default.yaml',
         description='Path to the YAML parameters file in the config folder'
     )
@@ -14,7 +14,7 @@ def generate_launch_description():
     params_file_path = PathJoinSubstitution([
         FindPackageShare('whycode'),
         'config',
-        LaunchConfiguration('params_file')
+        LaunchConfiguration('params-file')
     ])
 
     node = Node(
@@ -22,7 +22,9 @@ def generate_launch_description():
         executable='whycode_node',
         name='whycode_node',
         output='screen',
-        parameters=[params_file_path]
+        emulate_tty=True,
+        parameters=[params_file_path],
+        # prefix=['konsole -e gdb -ex run --args']
     )
 
     return LaunchDescription([
