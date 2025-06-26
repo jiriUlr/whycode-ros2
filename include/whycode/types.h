@@ -19,8 +19,8 @@ struct Parameters {
   int num_markers = 1;
   int min_size = 100;
   double circle_diameter = 0.122;
-  double field_length = 1.0;
-  double field_width = 1.0;
+  double calib_dist_x = 1.0;
+  double calib_dist_y = 1.0;
   double initial_circularity_tolerance = 100.0;
   double final_circularity_tolerance = 2.0;
   double area_ratio_tolerance = 40.0;
@@ -55,12 +55,12 @@ struct SSegment {
 
 // which transform to use
 typedef enum {
-  TRANSFORM_NONE,     //camera-centric
-  TRANSFORM_2D,       //3D->2D homography
-  TRANSFORM_3D,       //3D user-defined - linear combination of four translation/rotation transforms
-  TRANSFORM_4D,       //3D user-defined - full 4x3 matrix
-  TRANSFORM_INV,      //for testing purposes
-  TRANSFORM_NUMBER
+  TRANSFORM_NONE = 0,     // camera-centric
+  TRANSFORM_2D = 1,       // 3D->2D homography
+  TRANSFORM_3D = 2,       // 3D user-defined - linear combination of four translation/rotation transforms
+  TRANSFORM_4D = 3,       // 3D user-defined - full 4x3 matrix
+  TRANSFORM_INV = 4,      // for testing purposes
+  TRANSFORM_NUMBER = 5
 } ETransformType;
 
 struct STrackedObject {

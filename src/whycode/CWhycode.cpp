@@ -52,7 +52,7 @@ void CWhycode::selectMarker(float x, float y) {
 }
 
 /*manual calibration can be initiated by pressing 'r'
-  and then clicking circles at four positions (0,0)(params_.field_length,0)...*/
+  and then clicking circles at four positions (0,0)(params_.calib_dist_x,0)...*/
 void CWhycode::manualCalib() {
   if (current_marker_array_[0].valid) {
     STrackedObject o = current_marker_array_[0].obj;
@@ -79,8 +79,8 @@ void CWhycode::manualCalib() {
       //was it the last object needed to establish the transform ?
       if (calib_num_ == 4) {
         //calculate and save transforms
-        trans_->calibrate2D(calib_, params_.field_length, params_.field_width);
-        trans_->calibrate3D(calib_, params_.field_length, params_.field_width);
+        trans_->calibrate2D(calib_, params_.calib_dist_x, params_.calib_dist_y);
+        trans_->calibrate3D(calib_, params_.calib_dist_x, params_.calib_dist_y);
         calib_num_++;
         params_.num_markers = was_markers_;
         trans_->setTransformType(last_transform_type_);
@@ -94,7 +94,7 @@ void CWhycode::manualCalib() {
 }
 
 /*finds four outermost circles and uses them to set-up the coordinate system
-  [0,0] is left-top, [0,params_.field_length] next in clockwise direction*/
+  [0,0] is left-top, [0,params_.calib_dist_x] next in clockwise direction*/
 /*void CWhycode::autoCalib() {
   int ok_last_tracks = 0;
   for (int i = 0; i < params_.num_markers; ++i) {
@@ -134,8 +134,8 @@ void CWhycode::manualCalib() {
       calib_[i].y = calib_[i].y / (auto_calibration_steps_ - auto_calibration_pre_steps_);
       calib_[i].z = calib_[i].z / (auto_calibration_steps_ - auto_calibration_pre_steps_);
     }
-    trans_->calibrate2D(calib_, params_.field_length, params_.field_width);
-    trans_->calibrate3D(calib_, params_.field_length, params_.field_width);
+    trans_->calibrate2D(calib_, params_.calib_dist_x, params_.calib_dist_y);
+    trans_->calibrate3D(calib_, params_.calib_dist_x, params_.calib_dist_y);
     calib_num_++;
     params_.num_markers = was_markers_;
     trans_->setTransformType(last_transform_type_);
@@ -196,9 +196,9 @@ void CWhycode::autoCalib() {
         calib_[i].z = calib_[i].z / (auto_calibration_steps_ - auto_calibration_pre_steps_);
         // printf("i %d -- %f %f %f\n", i, calib_[i].x, calib_[i].y, calib_[i].z);
       }
-      trans_->calibrate2D(calib_, params_.field_length, params_.field_width);
+      trans_->calibrate2D(calib_, params_.calib_dist_x, params_.calib_dist_y);
       // trans_->calibrate2D(calib_, homo_square_pts_);
-      trans_->calibrate3D(calib_, params_.field_length, params_.field_width);
+      trans_->calibrate3D(calib_, params_.calib_dist_x, params_.calib_dist_y);
       calib_num_++;
       // params_.num_markers = was_markers_;
       trans_->setTransformType(last_transform_type_);
@@ -258,7 +258,7 @@ void CWhycode::processImage(CRawImage &image, std::vector<SMarker> &whycode_dete
     image.drawTimeStats(eval_time_, num_found_);
 
     if (mancalibrate_) {
-      image.drawGuideCalibration(calib_num_, params_.field_length, params_.field_width);
+      image.drawGuideCalibration(calib_num_, params_.calib_dist_x, params_.calib_dist_y);
     }
 
     for (int i = 0; i < params_.num_markers && params_.draw_coords; ++i) {

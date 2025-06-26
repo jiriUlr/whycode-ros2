@@ -1,6 +1,6 @@
 /**:
   ros__parameters:
-    info_topic: "/camera/camera/color/camera_info"
+    #info_topic: "/camera/camera/color/camera_info"
     img_base_topic: "/camera/camera/color/image_raw"
     img_transport: "compressed"
     calib_file: ""
@@ -15,8 +15,8 @@
     num_markers: 1
     min_size: 100
     circle_diameter: 0.122
-    field_length: 1.0
-    field_width: 1.0
+    calib_dist_x: 1.0
+    calib_dist_y: 1.0
     initial_circularity_tolerance: 100.0
     final_circularity_tolerance: 2.0
     area_ratio_tolerance: 40.0
