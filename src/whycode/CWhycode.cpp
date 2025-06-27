@@ -304,6 +304,8 @@ void CWhycode::init(float circle_diam, int id_b, int id_s, int ham_dist) {
 }
 
 void CWhycode::set_parameters(Parameters &p) {
+  if (p == params_) { return; }
+
   params_ = p;
 
   trans_->setCircleDiameter(params_.circle_diameter);
@@ -314,7 +316,8 @@ void CWhycode::set_parameters(Parameters &p) {
     last_marker_array_.resize(params_.num_markers);
 
     if (detector_array_.size() < params_.num_markers) {
-      for (int i = 0; i < params_.num_markers - detector_array_.size(); ++i) {
+      int new_markers = params_.num_markers - detector_array_.size();
+      for (int i = 0; i < new_markers; ++i) {
         detector_array_.emplace_back(std::make_unique<CCircleDetect>(params_.identify, id_bits_, id_samples_, params_.draw_segments, trans_, decoder_));
       }
     } else {

@@ -1,10 +1,10 @@
 /**:
   ros__parameters:
-    info_topic: "/camera/camera/color/camera_info"
-    img_base_topic: "/camera/camera/color/image_raw"
-    img_transport: "compressed"
+    info_topic: "/camera/camera_info"
+    img_base_topic: "/camera/image_raw"
+    img_transport: "raw"
     calib_file: ""
-    id_bits: 6
+    id_bits: 2
     id_samples: 360
     hamming_dist: 1
     draw_coords: True
@@ -12,7 +12,7 @@
     use_gui: True
     identify: True
     coords_method: 0
-    num_markers: 1
+    num_markers: 8
     min_size: 100
     circle_diameter: 0.122
     calib_dist_x: 1.0

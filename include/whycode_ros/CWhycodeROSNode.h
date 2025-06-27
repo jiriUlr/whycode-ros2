@@ -23,6 +23,7 @@
 namespace whycode_ros2 {
 
 struct Parameters {
+  bool use_gui = false;
   std::string img_transport;
   std::string img_base_topic;
   std::string info_topic;

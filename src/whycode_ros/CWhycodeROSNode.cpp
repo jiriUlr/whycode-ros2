@@ -105,7 +105,7 @@ void CWhycodeROSNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPt
   }
   markers_pub_->publish(marker_array);
 
-  if (img_pub_.getNumSubscribers() > 0) {
+  if (node_params_.use_gui && img_pub_.getNumSubscribers() > 0) {
     sensor_msgs::msg::Image out_msg;
     out_msg.header = msg->header;
     out_msg.height = msg->height;
@@ -195,6 +195,7 @@ whycode::Parameters CWhycodeROSNode::process_lib_parameters() {
     ParameterDescriptor().set__description("Enable highlighting found markers in the debug image"));
   why_params.use_gui = this->declare_parameter("use_gui", why_params.use_gui,
     ParameterDescriptor().set__description("Enable any drawings in the debug image"));
+  node_params_.use_gui = why_params.use_gui;
   why_params.identify = this->declare_parameter("identify", why_params.identify,
     ParameterDescriptor().set__description("Enable WhyCode detection instead of ID-less WhyCon"));
 
@@ -262,6 +263,7 @@ void CWhycodeROSNode::react_to_updated_parameters_callback(const std::vector<rcl
       why_params.draw_segments = param.as_bool();
     } else if (param.get_name() == "use_gui") {
       why_params.use_gui = param.as_bool();
+      node_params_.use_gui = why_params.use_gui;
     } else if (param.get_name() == "identify") {
       why_params.identify = param.as_bool();
     } else if (param.get_name() == "coords_method") {

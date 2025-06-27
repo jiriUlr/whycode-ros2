@@ -26,6 +26,8 @@ struct Parameters {
   double area_ratio_tolerance = 40.0;
   double center_distance_tolerance_ratio = 10.0;
   double center_distance_tolerance_abs = 5.0;
+
+  bool operator==(const Parameters&) const = default;
 };
 
 struct SDecoded {

@@ -62,7 +62,7 @@ public:
   void loadCalibration(const std::string &str);
 
 private:
-  Parameters params_;
+  Parameters params_{};
 
   // GUI-related stuff
   int eval_time_;         // time required to detect the patterns
@@ -73,6 +73,7 @@ private:
   std::vector<SMarker> current_marker_array_;      // array of currently detected markers
   std::vector<SMarker> last_marker_array_;         // array of previously detected markers
   std::vector<std::unique_ptr<CCircleDetect>> detector_array_;     // array of detector instances for each marker
+  // std::vector<CCircleDetect*> detector_array_;
 
   bool calibrated_coords_ = false;
 
