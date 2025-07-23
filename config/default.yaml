@@ -1,0 +1,24 @@
+/**:
+  ros__parameters:
+    info_topic: "/camera/camera_info"
+    img_base_topic: "/camera/image_raw"
+    img_transport: "raw"
+    calib_file: ""
+    id_bits: 2
+    id_samples: 360
+    hamming_dist: 1
+    draw_coords: True
+    draw_segments: True
+    use_gui: True
+    identify: True
+    coords_method: 0
+    num_markers: 8
+    min_size: 100
+    circle_diameter: 0.122
+    calib_dist_x: 1.0
+    calib_dist_y: 1.0
+    initial_circularity_tolerance: 100.0
+    final_circularity_tolerance: 2.0
+    area_ratio_tolerance: 40.0
+    center_distance_tolerance_ratio: 10.0
+    center_distance_tolerance_abs: 5.0
