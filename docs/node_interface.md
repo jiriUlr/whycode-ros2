@@ -2,7 +2,7 @@
 
 ## Behavior
 
-- Upon receiving a camera image, detects circular markers using the WhyCode algorithm and publishes the marker array.
+- Upon receiving a camera image, it detects circular markers using the WhyCode algorithm and publishes the marker array.
 - Optionally overlays debug visuals if enabled.
 - Parameters are dynamically reconfigurable via the ROS parameter interface, with validation.
 - Read only parameters are: `calib_file`, `img_transport`, `img_base_topic`, `info_topic`, `id_bits`, `id_samples`, `hamming_dist`.
