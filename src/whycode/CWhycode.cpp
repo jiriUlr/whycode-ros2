@@ -213,9 +213,10 @@ bool CWhycode::is_calibrated() {
   return trans_->is_calibrated();
 };
 
-void CWhycode::processImage(CRawImage &image, std::vector<SMarker> &whycode_detections) {
-  auto start = std::chrono::steady_clock::now();
+std::vector<SMarker> CWhycode::processImage(CRawImage &image) {
+  std::vector<SMarker> whycode_detections;
   num_found_ = num_static_ = 0;
+  auto start = std::chrono::steady_clock::now();
 
 
   // track the markers found in the last attempt
@@ -273,6 +274,8 @@ void CWhycode::processImage(CRawImage &image, std::vector<SMarker> &whycode_dete
     autoCalib();
   }
   if (calib_num_ < 4) { manualCalib(); }
+
+  return whycode_detections;
 }
 
 void CWhycode::setCalibrationConfig(const CalibrationConfig &config) {

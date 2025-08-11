@@ -45,7 +45,7 @@ public:
 
   void updateCameraInfo(const std::array<double, 9> &intrinsic_mat, const std::vector<double> &distortion_coeffs);
 
-  void processImage(CRawImage &image, std::vector<SMarker> &whycode_detections);
+  std::vector<SMarker> processImage(CRawImage &image);
 
   void set_parameters(Parameters &p);
 
