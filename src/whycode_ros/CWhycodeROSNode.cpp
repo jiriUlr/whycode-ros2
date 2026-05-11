@@ -108,6 +108,8 @@ void CWhycodeROSNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPt
     marker.maxy = detection.seg.maxy;
     marker.minx = detection.seg.minx;
     marker.miny = detection.seg.miny;
+    marker.outer_size = detection.outer_size;
+    marker.inner_size = detection.inner_size;
     marker_array.markers.push_back(marker);
   }
   markers_pub_->publish(marker_array);
@@ -216,8 +218,17 @@ whycode::Parameters CWhycodeROSNode::process_lib_parameters() {
     ParameterDescriptor().set__description("Number of markers to detect")
     .set__integer_range({IntegerRange().set__from_value(0).set__to_value(10000)}));
   why_params.min_size = this->declare_parameter("min_size", why_params.min_size,
-    ParameterDescriptor().set__description("Min marker size [px]")
-    .set__integer_range({IntegerRange().set__from_value(0).set__to_value(std::numeric_limits<std::int64_t>::max())}));
+    ParameterDescriptor().set__description("Min total marker size [px] (outer + inner), -1 to disable")
+    .set__integer_range({IntegerRange().set__from_value(-1).set__to_value(std::numeric_limits<std::int64_t>::max())}));
+  why_params.max_size = this->declare_parameter("max_size", why_params.max_size,
+    ParameterDescriptor().set__description("Max total marker size [px] (outer + inner), -1 to disable")
+    .set__integer_range({IntegerRange().set__from_value(-1).set__to_value(std::numeric_limits<std::int64_t>::max())}));
+  why_params.min_size_outer = this->declare_parameter("min_size_outer", why_params.min_size_outer,
+    ParameterDescriptor().set__description("Min outer segment size [px], -1 to disable")
+    .set__integer_range({IntegerRange().set__from_value(-1).set__to_value(std::numeric_limits<std::int64_t>::max())}));
+  why_params.min_size_inner = this->declare_parameter("min_size_inner", why_params.min_size_inner,
+    ParameterDescriptor().set__description("Min inner segment size [px], -1 to disable")
+    .set__integer_range({IntegerRange().set__from_value(-1).set__to_value(std::numeric_limits<std::int64_t>::max())}));
 
   why_params.circle_diameter = this->declare_parameter("circle_diameter", why_params.circle_diameter,
     ParameterDescriptor().set__description("Marker's outer diameter [m]")
@@ -283,6 +294,12 @@ void CWhycodeROSNode::react_to_updated_parameters_callback(const std::vector<rcl
       why_params.num_markers = param.as_int();
     } else if (param.get_name() == "min_size") {
       why_params.min_size = param.as_int();
+    } else if (param.get_name() == "max_size") {
+      why_params.max_size = param.as_int();
+    } else if (param.get_name() == "min_size_outer") {
+      why_params.min_size_outer = param.as_int();
+    } else if (param.get_name() == "min_size_inner") {
+      why_params.min_size_inner = param.as_int();
     } else if (param.get_name() == "circle_diameter") {
       why_params.circle_diameter = param.as_double();
     } else if (param.get_name() == "calib_dist_x") {

@@ -330,7 +330,8 @@ void CWhycode::set_parameters(Parameters &p) {
 
   for (auto & detector : detector_array_) {
     detector->reconfigure(params_.initial_circularity_tolerance, params_.final_circularity_tolerance, params_.area_ratio_tolerance,
-                          params_.center_distance_tolerance_ratio, params_.center_distance_tolerance_abs, params_.identify, params_.min_size);
+                          params_.center_distance_tolerance_ratio, params_.center_distance_tolerance_abs, params_.identify,
+                          params_.min_size, params_.max_size, params_.min_size_outer, params_.min_size_inner);
     detector->setDraw(params_.draw_segments);
   }
 }

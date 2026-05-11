@@ -25,7 +25,7 @@ public:
   CCircleDetect(bool id, int bits, int samples, bool draw, CTransformation *trans, CNecklace *decoder);
 
   // dynamic reconfigure of parameters
-  void reconfigure(float ict,float fct,float art,float cdtr,float cdta, bool id, int minS);
+  void reconfigure(float ict,float fct,float art,float cdtr,float cdta, bool id, int minS, int maxS, int minS_outer, int minS_inner);
 
   //main detection method, implements Algorithm 2 of [1] 
   SMarker findSegment(CRawImage &image, SSegment init);
@@ -39,7 +39,7 @@ public:
 
 private:
   //local pattern search - implements Algorithm 1 of [1]
-  bool examineSegment(CRawImage &image, SSegment *segmen, int ii, float areaRatio);
+  bool examineSegment(CRawImage &image, SSegment *segmen, int ii, float areaRatio, bool is_inner = false);
 
   //calculate the pattern dimensions by means of eigenvalue decomposition, see 3.3 of [1]
   SSegment calcSegment(SSegment segment,int size,long int x,long int y,long int cm0,long int cm1,long int cm2);
@@ -70,8 +70,11 @@ private:
   int numFailed;
   int threshold; 
 
-  int minSize; 
-  int lastThreshold; 
+  int minSize;
+  int maxSize;
+  int minSizeOuter;
+  int minSizeInner;
+  int lastThreshold;
   int thresholdBias; 
   int maxThreshold; 
 
@@ -87,6 +90,8 @@ private:
   int step;
   SSegment inner;
   SSegment outer;
+  int lastOuterSize;            // outer segment size before summing
+  int lastInnerSize;            // inner segment size
   float outerAreaRatio, innerAreaRatio, areasRatio;
   int queueStart, queueEnd, queueOldStart, numSegments;
   int expand[4];

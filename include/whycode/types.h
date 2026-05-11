@@ -17,7 +17,10 @@ struct Parameters {
   bool identify = true;
   int coords_method;
   int num_markers = 1;
-  int min_size = 100;
+  int min_size = 100;           // minimum total size (outer + inner)
+  int max_size = 1000000;       // maximum total size (outer + inner)
+  int min_size_outer = 50;      // minimum outer segment size
+  int min_size_inner = 30;      // minimum inner segment size
   double circle_diameter = 0.122;
   double calib_dist_x = 1.0;
   double calib_dist_y = 1.0;
@@ -91,6 +94,8 @@ struct SMarker {
   bool valid;
   SSegment seg;
   STrackedObject obj;
+  int outer_size;             // outer segment size before summing
+  int inner_size;             // inner segment size
 };
 
 struct CalibrationConfig {

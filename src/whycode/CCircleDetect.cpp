@@ -22,7 +22,6 @@ CCircleDetect::CCircleDetect(bool id, int bits, int samples, bool draw, CTransfo
   lastTrackOK = false;
   debug = false;
   maxFailed = 0;
-  minSize = 100;
   maxThreshold = 256;
   centerDistanceToleranceRatio = 0.01;
   centerDistanceToleranceAbs = 5;
@@ -38,15 +37,22 @@ CCircleDetect::CCircleDetect(bool id, int bits, int samples, bool draw, CTransfo
   outerAreaRatio = M_PI * (1.0 - areaRatioInner_Outer) / 4;
   innerAreaRatio = M_PI / 4.0;
   areasRatio = (1.0 - areaRatioInner_Outer) / areaRatioInner_Outer;
+  minSize = 100;
+  maxSize = 1000000;
+  minSizeOuter = 50;
+  minSizeInner = 30;
 }
 
-void CCircleDetect::reconfigure(float ict, float fct, float art, float cdtr, float cdta, bool id, int minS) {
+void CCircleDetect::reconfigure(float ict, float fct, float art, float cdtr, float cdta, bool id, int minS, int maxS, int minS_outer, int minS_inner) {
   circularTolerance = ict / 100.0;
   circularityTolerance = fct / 100.0;
   ratioTolerance = 1 + art / 100.0;
   centerDistanceToleranceRatio = cdtr / 100.0;
   centerDistanceToleranceAbs = cdta;
   minSize = minS;
+  maxSize = maxS;
+  minSizeOuter = minS_outer;
+  minSizeInner = minS_inner;
   identify = id;
 }
 
@@ -73,7 +79,7 @@ bool CCircleDetect::changeThreshold() {
   return t_step > 16;
 }
 
-bool CCircleDetect::examineSegment(CRawImage &image, SSegment *segmen, int ii, float areaRatio) {
+bool CCircleDetect::examineSegment(CRawImage &image, SSegment *segmen, int ii, float areaRatio, bool is_inner) {
   int vx, vy;
   queueOldStart = queueStart;
   int position = 0;
@@ -138,10 +144,12 @@ bool CCircleDetect::examineSegment(CRawImage &image, SSegment *segmen, int ii, f
     }
   }
 
-  //once the queue is empty, i.e. segment is complete, we compute its size 
+  //once the queue is empty, i.e. segment is complete, we compute its size
   segmen->size = queueEnd - queueOldStart;
-  if (segmen->size > minSize) {
-    //and if its large enough, we compute its other properties 
+  // check min size constraint (-1 means disabled)
+  int min_segment_size = is_inner ? minSizeInner : minSizeOuter;
+  if (min_segment_size < 0 || segmen->size > min_segment_size) {
+    //and if its large enough, we compute its other properties
     segmen->maxx = maxx;
     segmen->maxy = maxy;
     segmen->minx = minx;
@@ -154,7 +162,7 @@ bool CCircleDetect::examineSegment(CRawImage &image, SSegment *segmen, int ii, f
     segmen->roundness = vx * vy * areaRatio / segmen->size;
     //we check if the segment is likely to be a ring
     if (segmen->roundness - circularTolerance < 1.0 && segmen->roundness + circularTolerance > 1.0 || true) { // TODO
-      //if its round, we compute yet another properties 
+      //if its round, we compute yet another properties
       segmen->round = true;
       segmen->mean = 0;
       for (int p = queueOldStart; p < queueEnd; ++p) {
@@ -259,14 +267,14 @@ SMarker CCircleDetect::findSegment(CRawImage &image, SSegment init) {
       queueEnd = 0;
       queueStart = 0;
       //if the segment looks like a ring, we check its inside area
-      if (examineSegment(image, &outer, ii, outerAreaRatio)) {
+      if (examineSegment(image, &outer, ii, outerAreaRatio, false)) {
         pos = outer.y * image.width_ + outer.x;
         if (buffer.get()[pos] == 0) {
           ptr = &image.data_[pos * step];
           buffer.get()[pos]= (ptr[0] >= threshold) - 2;
-        }   
+        }
         if (buffer.get()[pos] == -1) {
-          if (examineSegment(image,&inner,pos,innerAreaRatio)) {
+          if (examineSegment(image,&inner,pos,innerAreaRatio,true)) {
             //the inside area is a circle. now what is the area ratio of the black and white ? also, are the circles concentric ?
 
             if (debug) { printf("Area ratio should be %.3f, but is %.3f, that is %.0f%% off. ",areasRatio,(float)outer.size/inner.size,(1-outer.size/areasRatio/inner.size)*100); }
@@ -335,24 +343,34 @@ SMarker CCircleDetect::findSegment(CRawImage &image, SSegment init) {
                     inner.m0 = m0o;
                     inner.m1 = m1o;
                   }
+                  // save individual sizes before summing
+                  lastOuterSize = outer.size;
+                  lastInnerSize = inner.size;
                   outer.size = outer.size + inner.size;
-                  outer.horizontal = outer.x - inner.x;
-                  if (fabs(inner.v0 * outer.v0 + inner.v1 * outer.v1) > 0.5) {
-                    outer.r0 = inner.m0 / outer.m0;
-                    outer.r1 = inner.m1 / outer.m1;
+                  // check total size constraints (-1 means disabled)
+                  bool min_ok = (minSize < 0 || outer.size > minSize);
+                  bool max_ok = (maxSize < 0 || outer.size < maxSize);
+                  if (!min_ok || !max_ok) {
+                    outer.valid = inner.valid = false;
                   } else {
-                    outer.r0 = inner.m1 / outer.m0;
-                    outer.r1 = inner.m0 / outer.m1;
+                    outer.horizontal = outer.x - inner.x;
+                    if (fabs(inner.v0 * outer.v0 + inner.v1 * outer.v1) > 0.5) {
+                      outer.r0 = inner.m0 / outer.m0;
+                      outer.r1 = inner.m1 / outer.m1;
+                    } else {
+                      outer.r0 = inner.m1 / outer.m0;
+                      outer.r1 = inner.m0 / outer.m1;
+                    }
+
+                    float orient = atan2(outer.y - inner.y, outer.x - inner.x);
+                    outer.angle = atan2(outer.v1, outer.v0);
+                    if (debug) { printf("Angle: %.3f %.3f \n", outer.angle, orient); }
+                    if (fabs(normalizeAngle(outer.angle - orient)) > M_PI / 2) { outer.angle = normalizeAngle(outer.angle + M_PI); }
+
+                    outer.valid = inner.valid = true;
+                    threshold = (outer.mean + inner.mean) / 2;
+                    if (track) { ii = start - 1; }
                   }
-
-                  float orient = atan2(outer.y - inner.y, outer.x - inner.x);
-                  outer.angle = atan2(outer.v1, outer.v0);
-                  if (debug) { printf("Angle: %.3f %.3f \n", outer.angle, orient); }
-                  if (fabs(normalizeAngle(outer.angle - orient)) > M_PI / 2) { outer.angle = normalizeAngle(outer.angle + M_PI); }
-
-                  outer.valid = inner.valid = true;
-                  threshold = (outer.mean + inner.mean) / 2;
-                  if (track) { ii = start - 1; }
                 } else {
                   if (track && init.valid) {
                     ii = start - 1;
@@ -479,6 +497,8 @@ SMarker CCircleDetect::findSegment(CRawImage &image, SSegment init) {
   output.valid = outer.valid;
   output.seg = outer;
   output.obj = tracked_object;
+  output.outer_size = lastOuterSize;
+  output.inner_size = lastInnerSize;
 
   return output;
 }

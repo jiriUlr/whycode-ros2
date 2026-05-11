@@ -2,21 +2,31 @@
   ros__parameters:
     info_topic: "/camera/camera_info"
     img_base_topic: "/camera/image_raw"
-    img_transport: "raw"
-    calib_file: ""
-    id_bits: 2
+    img_transport: "compressed"
+    
+    num_markers: 1
+    circle_diameter: 0.212
+    
+    identify: True
+    id_bits: 3
     id_samples: 360
     hamming_dist: 1
+
     draw_coords: True
     draw_segments: True
     use_gui: True
-    identify: True
-    coords_method: 0
-    num_markers: 6
-    min_size: 100
-    circle_diameter: 0.06
+
+    # use -1 to disable individual size checks
+    min_size: 1000  # 10 meters
+    max_size: 15000  # 2 meters
+    min_size_inner: 30
+    min_size_outer: 30
+    
+    coords_method: 0  # 0 for camera centric coordinates
+    calib_file: ""
     calib_dist_x: 1.0
     calib_dist_y: 1.0
+
     initial_circularity_tolerance: 100.0
     final_circularity_tolerance: 2.0
     area_ratio_tolerance: 40.0
