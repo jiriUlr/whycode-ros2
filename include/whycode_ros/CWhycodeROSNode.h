@@ -4,8 +4,11 @@
 #include <vector>
 #include <memory>
 
+#include <opencv2/opencv.hpp>
+
 #include <rclcpp/rclcpp.hpp>
 #include <image_transport/image_transport.hpp>
+#include <cv_bridge/cv_bridge.hpp>
 
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>

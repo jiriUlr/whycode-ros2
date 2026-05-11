@@ -19,6 +19,7 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(cv_bridge REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
@@ -43,7 +44,7 @@ add_executable(whycode_node
     src/whycode/CNecklace.cpp
     )
 
-ament_target_dependencies(whycode_node rclcpp std_msgs sensor_msgs geometry_msgs image_transport whycode_interfaces OpenCV)
+ament_target_dependencies(whycode_node rclcpp cv_bridge std_msgs sensor_msgs geometry_msgs image_transport whycode_interfaces OpenCV)
 
 #############
 ## Install ##

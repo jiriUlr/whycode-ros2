@@ -77,7 +77,11 @@ void CWhycodeROSNode::cameraInfoCallback(const sensor_msgs::msg::CameraInfo::Sha
 }
 
 void CWhycodeROSNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &msg) {
-  image_.updateImage((unsigned char*)&msg->data[0], msg->height, msg->width, msg->step / msg->width);
+  // image_.updateImage((unsigned char*)&msg->data[0], msg->height, msg->width, msg->step / msg->width);
+
+  cv_bridge::CvImageConstPtr cv_img = cv_bridge::toCvShare(msg, "rgb8");
+
+  image_.updateImage(cv_img->image.data, cv_img->image.cols, cv_img->image.rows, 3);
 
   std::vector<whycode::SMarker> whycode_detections = whycode_->processImage(image_);
 
@@ -100,6 +104,10 @@ void CWhycodeROSNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPt
     marker.rotation.x = detection.obj.roll;
     marker.rotation.y = detection.obj.pitch;
     marker.rotation.z = detection.obj.yaw;
+    marker.maxx = detection.seg.maxx;
+    marker.maxy = detection.seg.maxy;
+    marker.minx = detection.seg.minx;
+    marker.miny = detection.seg.miny;
     marker_array.markers.push_back(marker);
   }
   markers_pub_->publish(marker_array);
