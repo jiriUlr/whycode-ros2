@@ -150,9 +150,12 @@ CWhycodeROSNode::CWhycodeROSNode()
   img_pub_ = image_transport::create_publisher(this, "~/debug_image");
   markers_pub_ = this->create_publisher<whycode_interfaces::msg::MarkerArray>("~/markers", 1);
   discovery_pub_ = this->create_publisher<whycode_interfaces::msg::Discovery>("~/discovery", 1);
+  // One QoS shared by both subscribers, built explicitly so no other policies
+  // (lifespan, deadline, liveliness, ...) sneak in from a profile preset.
+  const auto cam_qos = rclcpp::QoS(rclcpp::KeepLast(10)).best_effort().durability_volatile();
   img_sub_ = image_transport::create_subscription(this, node_params_.img_base_topic, std::bind(&CWhycodeROSNode::imageCallback, this, _1),
-                                                  node_params_.img_transport);  // image_transport::TransportHints for optionss
-  cam_info_sub_ = this->create_subscription<sensor_msgs::msg::CameraInfo>(node_params_.info_topic, 1, std::bind(&CWhycodeROSNode::cameraInfoCallback, this, _1));
+                                                  node_params_.img_transport, cam_qos.get_rmw_qos_profile());
+  cam_info_sub_ = this->create_subscription<sensor_msgs::msg::CameraInfo>(node_params_.info_topic, cam_qos, std::bind(&CWhycodeROSNode::cameraInfoCallback, this, _1));
 
   calib_method_srv_ = this->create_service<whycode_interfaces::srv::SetCalibMethod>("~/set_calib_method", std::bind(&CWhycodeROSNode::setCalibMethodCallback, this, _1, _2));
   calib_path_srv_ = this->create_service<whycode_interfaces::srv::SetCalibPath>("~/set_calib_path", std::bind(&CWhycodeROSNode::setCalibPathCallback, this, _1, _2));
