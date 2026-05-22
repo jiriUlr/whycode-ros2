@@ -37,31 +37,26 @@ void CTransformation::updateCameraParams(const std::array<double, 9> &intri, con
 }
 
 void CTransformation::reTransformXY(float &x, float &y, float &z) {
-  static cv::Mat coords = cv::Mat(3, 1, CV_32FC1);
-  static cv::Mat result = cv::Mat(2, 1, CV_32FC1);
-
-  coords.at<float>(0) = x;
-  coords.at<float>(1) = y;
-  coords.at<float>(2) = z;
+  // cv::projectPoints requires 3-channel object points and produces 2-channel image points.
+  std::vector<cv::Point3f> coords{cv::Point3f(x, y, z)};
+  std::vector<cv::Point2f> result;
 
   cv::projectPoints(coords, cv::Mat::zeros(3, 1, CV_32FC1), cv::Mat::zeros(3, 1, CV_32FC1), intrinsic_mat_, distortion_coeffs_, result);
 
-  x = result.at<float>(0);
-  y = result.at<float>(1);
+  x = result[0].x;
+  y = result[0].y;
   z = 0;
 }
 
 void CTransformation::transformXY(float &x, float &y) {
-  static cv::Mat coords = cv::Mat(2, 1, CV_32FC1);
-  static cv::Mat result = cv::Mat(2, 1, CV_32FC1);
-
-  coords.at<float>(0) = x;
-  coords.at<float>(1) = y;
+  // cv::undistortPoints expects 2-channel input and output points.
+  std::vector<cv::Point2f> coords{cv::Point2f(x, y)};
+  std::vector<cv::Point2f> result;
 
   cv::undistortPoints(coords, result, intrinsic_mat_, distortion_coeffs_);
 
-  x = result.at<float>(0);
-  y = result.at<float>(1);
+  x = result[0].x;
+  y = result[0].y;
 }
 
 void CTransformation::transform2D(STrackedObject &o) {
